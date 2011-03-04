@@ -10,6 +10,7 @@ RSpec::Core::RakeTask.new(:spec) do |t|
   t.pattern = 'spec/**/*_spec.rb'
 end
 
+desc "Run all specs with rcov"
 RSpec::Core::RakeTask.new(:rcov) do |t|
   t.rcov = true
   t.rspec_opts = ["-b", "-c", "-fd"]
