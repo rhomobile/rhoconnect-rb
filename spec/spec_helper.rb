@@ -1,5 +1,5 @@
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
-
+require 'rspec'
 require 'rhosync-rb'
 
 # define ActiveRecord and DM here for testing

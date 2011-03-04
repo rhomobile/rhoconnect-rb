@@ -54,13 +54,13 @@ describe Rhosync::Resource do
     end
     
     it "should raise exception if dm-serializer is missing" do
-      pending
-      Rhosync::Resource::ClassMethods.stub!(:is_defined?).and_return("abc")
+      class TestModel6
+        include DataMapper::Resource
+        include Rhosync::Resource
+      end
+      TestModel6.stub!(:is_defined?).and_return(false)
       lambda { 
-        class TestModel6
-           include DataMapper::Resource
-           include Rhosync::Resource
-        end
+        TestModel6.install_callbacks
       }.should raise_error("Rhosync::Resource requires dm-serializer to work with DataMapper. Install with `gem install dm-serializer` and add to your application.")
     end
   end

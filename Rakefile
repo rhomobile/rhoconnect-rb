@@ -1,10 +1,19 @@
 require 'rubygems'
 require 'bundler'
-Bundler.setup
+Bundler.setup(:default, :test)
+
+require 'rspec/core/rake_task'
 
 desc "Run all specs"
-task :spec do
-  bundle_exec("spec -cfs spec")
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.rspec_opts = ["-b", "-c", "-fd"]
+  t.pattern = 'spec/**/*_spec.rb'
+end
+
+RSpec::Core::RakeTask.new(:rcov) do |t|
+  t.rcov = true
+  t.rspec_opts = ["-b", "-c", "-fd"]
+  t.rcov_opts =  ['--exclude', 'spec/*,gems/*']
 end
 
 desc "Build the gem using rhosync-rb.gemspec"
