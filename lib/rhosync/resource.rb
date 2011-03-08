@@ -1,5 +1,3 @@
-require 'json'
-
 module Rhosync
   module Resource
     
@@ -26,7 +24,7 @@ module Rhosync
       
       def rhosync_create
         payload = is_datamapper? ? self.to_json : self.serializable_hash.to_json
-        puts "payload: #{payload.inspect}"
+        post("/api/create_objects", payload)
       end
       
       def rhosync_destroy
@@ -45,6 +43,9 @@ module Rhosync
         model.class_eval do
           install_callbacks
         end
+      end
+      
+      def foo
       end
     end
   

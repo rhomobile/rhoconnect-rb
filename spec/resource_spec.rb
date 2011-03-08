@@ -47,7 +47,7 @@ describe Rhosync::Resource do
         include DataMapper::Resource
         include Rhosync::Resource
       end
-    
+        
       TestModel5.rhosync_callbacks[:create].should == :rhosync_create
       TestModel5.rhosync_callbacks[:destroy].should == :rhosync_destroy
       TestModel5.rhosync_callbacks[:update].should == :rhosync_update

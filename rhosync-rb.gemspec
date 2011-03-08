@@ -1,9 +1,10 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
+require 'rhosync/version'
 
 Gem::Specification.new do |s|
   s.name        = "rhosync-rb"
-  s.version     = IO.read(File.join(File.dirname(__FILE__), 'VERSION'))
+  s.version     = Rhosync::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Rhomobile"]
   s.date        = Time.now.strftime('%Y-%m-%d')
