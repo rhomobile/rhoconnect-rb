@@ -23,16 +23,31 @@ module Rhosync
     module InstanceMethods
       
       def rhosync_create
-        payload = is_datamapper? ? self.to_json : self.serializable_hash.to_json
-        post("/api/create_objects", payload)
+        call_client_method(:create)
       end
       
       def rhosync_destroy
-        "destroyed me #{self.inspect}"
+        call_client_method(:destroy)
       end
       
       def rhosync_update
-        "updated me #{self.inspect}"
+        call_client_method(:update)
+      end
+      
+      private
+      
+      def call_client_method(action)
+        attribs = self.attributes.dup
+        attribs.each do |key,value|
+          value = Time.parse(value.to_s).to_i if value.is_a?(Time) or value.is_a?(DateTime)
+        end if Rhosync.configuration.sync_time_as_int    
+        begin
+          Rhosync::Client.new.send(action, self.class.to_s, self.get_partition, attribs)
+        rescue RestClient::Exception => re
+          warn "#{self.class.to_s}: rhosync_#{action} returned error: #{re.message} - #{re.http_body}"
+        rescue Exception => e
+          warn "#{self.class.to_s}: rhosync_#{action} returned unexpected error: #{e.message}"
+        end
       end
       
     end
@@ -43,9 +58,6 @@ module Rhosync
         model.class_eval do
           install_callbacks
         end
-      end
-      
-      def foo
       end
     end
   
@@ -71,15 +83,15 @@ module Rhosync
       
       private
       
-      def is_defined?(const)
+      def is_defined?(const) # :nodoc:
         defined?(const)
       end
       
-      def is_datamapper?
+      def is_datamapper? # :nodoc:
         self.included_modules.include?(DataMapper::Resource) rescue false
       end
       
-      def is_activerecord?
+      def is_activerecord? # :nodoc:
         self.superclass == ActiveRecord::Base rescue false
       end
     end

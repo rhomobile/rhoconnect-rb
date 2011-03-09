@@ -65,7 +65,16 @@ describe Rhosync::Resource do
     end
   end
   
-  context "on create" do
+  context "on create update delete" do
     
+    it "should call create hook" do
+      class TestModel7 < ActiveRecord::Base
+        include Rhosync::Resource
+      end
+      
+      test = TestModel7.new
+      test.rhosync_create
+      
+    end
   end
 end

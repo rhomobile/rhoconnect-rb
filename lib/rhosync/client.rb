@@ -1,17 +1,19 @@
 require 'rest_client'
 require 'uri'
 require 'rhosync/version'
+require 'rhosync/configuration'
 
 module Rhosync
   class Client
     attr_accessor :uri, :token
     
+    # allow configuration, uri or environment variable initialization
     def initialize(params = {})
-      uri = ENV['RHOSYNC_URL'] || params[:uri]
+      uri = params[:uri] || Rhosync.configuration.uri || ENV['RHOSYNC_URL']
       raise ArgumentError.new("Please provide a :uri or set RHOSYNC_URL") unless uri
       uri = URI.parse(uri)
       
-      @token = uri.user || params[:token]
+      @token = params[:token] || Rhosync.configuration.token || uri.user
       uri.user = nil; @uri = uri.to_s      
       raise ArgumentError.new("Please provide a :token or set it in uri") unless @token
       
@@ -19,11 +21,41 @@ module Rhosync
     end
     
     def create(source_name, partition, obj = {})
+      send_objects("push_objects", source_name, partition, obj)
+    end
+    
+    def destroy(source_name, partition, obj = {})
+      send_objects("push_deletes", source_name, partition, obj)
+    end
+    
+    # update, create, it doesn't matter :)
+    alias :update :create
+    
+    def set_auth_callback(callback)
+      process(:post, "/api/set_auth_callback", { :callback => callback })
+    end
+    
+    def set_query_callback(source_name, callback)
+      process(:post, "/api/set_query_callback", 
+        { 
+          :source_id => source_name,
+          :callback => callback 
+        }
+      )
+    end
+
+    protected 
+    
+    def validate_args(source_name, partition, obj = {}) # :nodoc:
       raise ArgumentError.new("Missing object id for #{obj.inspect}") unless obj['id']
       raise ArgumentError.new("Missing source_name.") unless source_name or source_name.empty?
       raise ArgumentError.new("Missing partition for #{model}.") unless partition or partition.empty?
+    end
+    
+    def send_objects(action, source_name, partition, obj = {}) # :nodoc:
+      validate_args(source_name, partition, obj)
       
-      process(:post, "/api/push_objects", 
+      process(:post, "/api/#{action}", 
         {
           :source_id => source_name,
           :user_id => partition,
@@ -32,20 +64,11 @@ module Rhosync
       )
     end
     
-    def set_auth_callback(callback)
-      process(:post, "/api/set_auth_callback")
-    end
-    
-    def set_query_callback
-    end
-
-    protected 
-    
-    def resource(path)
+    def resource(path) # :nodoc:
       RestClient::Resource.new(@uri)[path]
     end
     
-    def process(method, path, payload = nil)
+    def process(method, path, payload = nil) # :nodoc:
       headers = api_headers
       unless method == :get
         payload  = payload.merge!(:api_token => @token).to_json
@@ -54,22 +77,6 @@ module Rhosync
       args     = [method, payload, headers].compact
       response = resource(path).send(*args)
       response
-    end
-    
-    def get(path)    # :nodoc:
-      process(:get, path)
-    end
-
-    def post(path, payload="")    # :nodoc:
-      process(:post, path, payload)
-    end
-
-    def put(path, payload)    # :nodoc:
-      process(:put, path, payload)
-    end
-
-    def delete(path)    # :nodoc:
-      process(:delete, path)
     end
     
     def api_headers   # :nodoc:

@@ -9,6 +9,15 @@ include WebMock::API
 module ActiveRecord
   class Base
     
+    def attributes
+      {
+        "name" => "John", 
+        "created_at" => Time.parse("Wed Mar 09 02:11:06 UTC 2011"),
+        "updated_at" => Time.parse("Wed Mar 09 02:11:06 UTC 2011"), 
+        "id" => 1
+      }
+    end
+    
     class << self
       attr_accessor :create_callback,:destroy_callback,:update_callback
       
@@ -29,6 +38,15 @@ end
 
 module DataMapper
   module Resource
+    
+    def attributes
+      {
+        :created_at => DateTime.parse("Wed Mar 09 02:11:06 UTC 2011"), 
+        :updated_at => DateTime.parse("Wed Mar 09 02:11:06 UTC 2011"),
+        :name => "John", 
+        :id => 1
+      }
+    end
     
     def self.included(model)
       model.extend(ClassMethods)
