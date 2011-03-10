@@ -1,7 +1,4 @@
-require 'rest_client'
 require 'uri'
-require 'rhosync/version'
-require 'rhosync/configuration'
 
 module Rhosync
   class Client
@@ -21,11 +18,11 @@ module Rhosync
     end
     
     def create(source_name, partition, obj = {})
-      send_objects("push_objects", source_name, partition, obj)
+      send_objects(:push_objects, source_name, partition, obj)
     end
     
     def destroy(source_name, partition, obj = {})
-      send_objects("push_deletes", source_name, partition, obj)
+      send_objects(:push_deletes, source_name, partition, obj)
     end
     
     # update, create, it doesn't matter :)
@@ -59,7 +56,7 @@ module Rhosync
         {
           :source_id => source_name,
           :user_id => partition,
-          :objects => { obj['id'] => obj }
+          :objects => action == :push_deletes ? [obj['id'].to_s] : { obj['id'] => obj }
         }
       )
     end

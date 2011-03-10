@@ -18,6 +18,10 @@ module ActiveRecord
       }
     end
     
+    def warn(*args)
+      Kernel.warn(args)
+    end
+    
     class << self
       attr_accessor :create_callback,:destroy_callback,:update_callback
       

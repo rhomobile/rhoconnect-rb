@@ -39,10 +39,10 @@ module Rhosync
       def call_client_method(action)
         attribs = self.attributes.dup
         attribs.each do |key,value|
-          value = Time.parse(value.to_s).to_i if value.is_a?(Time) or value.is_a?(DateTime)
+          attribs[key] = Time.parse(value.to_s).to_i if value.is_a?(Time) or value.is_a?(DateTime)
         end if Rhosync.configuration.sync_time_as_int    
         begin
-          Rhosync::Client.new.send(action, self.class.to_s, self.get_partition, attribs)
+          Rhosync::Client.new.send(action, self.class.to_s, self.class.get_partition, attribs)
         rescue RestClient::Exception => re
           warn "#{self.class.to_s}: rhosync_#{action} returned error: #{re.message} - #{re.http_body}"
         rescue Exception => e

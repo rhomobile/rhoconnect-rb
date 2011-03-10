@@ -67,14 +67,52 @@ describe Rhosync::Resource do
   
   context "on create update delete" do
     
-    it "should call create hook" do
+    it "should call create update delete hook" do
       class TestModel7 < ActiveRecord::Base
         include Rhosync::Resource
+        partition :app
       end
-      
-      test = TestModel7.new
-      test.rhosync_create
-      
+      client = mock('Rhosync::Client')
+      client.stub!(:send)
+      Rhosync::Client.stub!(:new).and_return(client)
+      [:create, :update, :destroy].each do |action|
+        client.should_receive(:send).with(
+          action, "TestModel7", :app, {"name"=>"John", "created_at"=>1299636666, "updated_at"=>1299636666, "id"=>1}
+        )
+        TestModel7.new.send("rhosync_#{action}".to_sym)
+      end
+    end
+    
+    it "should warn on RestClient::Exception" do
+      class TestModel8 < ActiveRecord::Base
+        include Rhosync::Resource
+        partition :app
+      end
+      client = mock('Rhosync::Client')
+      exception = RestClient::Exception.new(
+        RestClient::Response.create("error connecting to server", nil, nil), 500
+      )
+      exception.message = "Internal Server Error"
+      client.stub!(:send).and_return { raise exception }
+      Rhosync::Client.stub!(:new).and_return(client)
+      tm = TestModel8.new
+      tm.should_receive(:warn).with(
+        "TestModel8: rhosync_create returned error: Internal Server Error - error connecting to server"
+      )
+      tm.rhosync_create
+    end
+    
+    it "should warn on Exception" do
+      class TestModel8 < ActiveRecord::Base
+        include Rhosync::Resource
+        partition :app
+      end
+      client = mock('Rhosync::Client')
+      client.stub!(:send).and_return { raise Exception.new("error connecting to server") }
+      Rhosync::Client.stub!(:new).and_return(client)
+      tm = TestModel8.new
+      tm.should_receive(:warn).with("TestModel8: rhosync_create returned unexpected error: error connecting to server")
+      tm.rhosync_create
     end
   end
 end

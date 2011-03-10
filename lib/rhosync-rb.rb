@@ -1,3 +1,6 @@
 require 'json'
-
+require 'rest_client'
+require 'rhosync/version'
+require 'rhosync/configuration'
+require 'rhosync/client'
 require 'rhosync/resource'
