@@ -34,6 +34,10 @@ module Rhosync
         call_client_method(:update)
       end
       
+      def rhosync_query(partition)
+        #return all objects for this partition 
+      end
+      
       private
       
       def call_client_method(action)
