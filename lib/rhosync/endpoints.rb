@@ -1,4 +1,20 @@
 require 'json'
+
+module Rhosync
+  class EndpointHelpers
+    def self.authenticate(content_type, body)
+      code, params = 200, nil
+      if content_type and content_type.match(/^application\/json/) and body and body.length > 2
+        params = JSON.parse(body)
+      end
+      if params and Rhosync.configuration.authenticate
+        code = 401 unless Rhosync.configuration.authenticate.call(params)
+      end  
+      [code, {'Content-Type' => 'text/plain'}, [""]]
+    end
+  end
+end
+
 # Detect if we're running inside of rails
 if defined? Rails
   class Engine < Rails::Engine; end
@@ -7,10 +23,7 @@ if defined? Rails
     class Authenticate
       def self.call(env)
         req = Rack::Request.new(env)
-        puts req.GET.inspect
-        body = req.body.read
-        puts JSON.parse(body).inspect if req.content_type == 'application/json' and body and body.length > 2
-        [200, {'Content-Type' => 'text/plain'}, ["hello from rack"]]
+        Rhosync::EndpointHelpers.authenticate(req.content_type, req.body.read)
       end
     end
   end
@@ -45,10 +58,12 @@ if defined? Sinatra
   #   end
   # end
   module Sinatra
-    module RhosyncEndpoints
+    class RhosyncEndpoints
       def self.registered(app)
-        app.get '/rhosync/authenticate' do
-          "hello sinatra: #{params.inspect}"
+        app.post '/rhosync/authenticate' do
+          Rhosync::EndpointHelpers.authenticate(
+            request.env['CONTENT_TYPE'], request.body.read
+          )
         end
       end
     end

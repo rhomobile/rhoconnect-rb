@@ -1,9 +1,26 @@
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'rspec'
-require 'rhosync-rb'
 require 'webmock/rspec'
 
 include WebMock::API
+
+# stub for rack
+module Rack
+  class Request; end
+end
+
+# stubs for rails engine
+module Rails 
+  class Engine; end
+end
+
+# stubs for sinatra
+module Sinatra
+  def self.register(mod); end
+end
+
+require 'rhosync-rb'
+
 
 # define ActiveRecord and DM here for testing
 module ActiveRecord

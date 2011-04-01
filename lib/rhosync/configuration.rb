@@ -1,6 +1,6 @@
 module Rhosync
   class Configuration
-    attr_accessor :uri, :token, :sync_time_as_int
+    attr_accessor :uri, :token, :authenticate, :sync_time_as_int
     
     def initialize
       @sync_time_as_int = true
@@ -20,6 +20,9 @@ module Rhosync
   #
   #   config.uri   = "http://myrhosync.com"
   #   config.token = "secrettoken"
+  #   config.authenticate = lambda { |credentials| 
+  #     User.authenticate(credentials) 
+  #   }
   #
   # @example
   #   Rhosync.configure do |config|
@@ -27,7 +30,7 @@ module Rhosync
   #     config.token = "secrettoken"
   #   end
   def self.configure
-    self.configuration ||= Configuration.new
+    self.configuration = Configuration.new
     yield(configuration)
   end
 end

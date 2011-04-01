@@ -1,7 +1,5 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-require 'rhosync/client'
-
 describe Rhosync::Client do
   
   context "on initialize" do
@@ -28,7 +26,7 @@ describe Rhosync::Client do
     it "should initialize with configure block" do
       Rhosync.configure do |config|
         config.uri = "http://test.rhosync.com"
-        config.token = "token"        
+        config.token = "token"
       end
       begin
         c = Rhosync::Client.new
