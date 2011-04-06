@@ -1,6 +1,20 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-describe Rhosync::Authenticate do
+describe Rhosync::EndpointHelpers do
+  class AuthTest; end
+  
+  def setup_auth_test(success)
+    AuthTest.stub!(:do_auth).and_return(success)
+    AuthTest.should_receive(:do_auth).with(@creds)
+    
+    Rhosync.configure do |config|
+      config.uri = "http://test.rhosync.com"
+      config.token = "token"
+      config.authenticate = lambda {|credentials|
+        AuthTest.do_auth(credentials)
+      }  
+    end
+  end
   
   context "on Rails authenticate" do
     before(:each) do
@@ -14,34 +28,14 @@ describe Rhosync::Authenticate do
     end
     
     it "should call configured authenticate block" do
-      class AuthTest; end
-      AuthTest.stub!(:do_auth).and_return(true)
-      AuthTest.should_receive(:do_auth).with(@creds)
-      
-      Rhosync.configure do |config|
-        config.uri = "http://test.rhosync.com"
-        config.token = "token"
-        config.authenticate = lambda {|credentials|
-          AuthTest.do_auth(credentials)
-        }  
-      end
+      setup_auth_test(true)
       Rhosync::Authenticate.call(@env).should == [
         200, {'Content-Type' => 'text/plain'}, [""]
       ]
     end
     
     it "should call configured authenticate block with 401" do
-      class AuthTest; end
-      AuthTest.stub!(:do_auth).and_return(false)
-      AuthTest.should_receive(:do_auth).with(@creds)
-      
-      Rhosync.configure do |config|
-        config.uri = "http://test.rhosync.com"
-        config.token = "token"
-        config.authenticate = lambda {|credentials|
-          AuthTest.do_auth(credentials)
-        }  
-      end
+      setup_auth_test(false)
       Rhosync::Authenticate.call(@env).should == [
         401, {'Content-Type' => 'text/plain'}, [""]
       ]
@@ -68,27 +62,34 @@ describe Rhosync::Authenticate do
       req.stub!(:body).and_return(strio)
       req.stub!(:env).and_return('CONTENT_TYPE' => 'application/json')
       Sinatra::RhosyncEndpoints.stub!(:request).and_return(req)
+      Sinatra::RhosyncEndpoints.stub!(:params).and_return(:partition => "testuser", :resource => "Product")
+      Rhosync::EndpointHelpers.stub!(:query)
+      @app = mock("app")
+      @app.stub!(:post).and_yield
     end
     
     it "should call configured authenticate block" do
-      class AuthTest; end
-      AuthTest.stub!(:do_auth).and_return(true)
-      AuthTest.should_receive(:do_auth).with(@creds)
-      app = mock("app")
-      app.stub!(:post).and_yield
-      Rhosync.configure do |config|
-        config.uri = "http://test.rhosync.com"
-        config.token = "token"
-        config.authenticate = lambda {|credentials|
-          AuthTest.do_auth(credentials)
-        }  
-      end
-      Sinatra::RhosyncEndpoints.registered(app).should == [
+      setup_auth_test(true)
+      Sinatra::RhosyncEndpoints.registered(@app).should == [
         200, {'Content-Type' => 'text/plain'}, [""]
       ]
     end
     
-    it "should call configured authenticate block with 401"    
-    it "should return true if no authenticate block exists"
+    it "should call configured authenticate block with 401" do
+      setup_auth_test(false)
+      Sinatra::RhosyncEndpoints.registered(@app).should == [
+        401, {'Content-Type' => 'text/plain'}, [""]
+      ]
+    end
+        
+    it "should return true if no authenticate block exists" do
+      Rhosync.configure do |config|
+        config.uri = "http://test.rhosync.com"
+        config.token = "token" 
+      end
+      Sinatra::RhosyncEndpoints.registered(@app).should == [
+        200, {'Content-Type' => 'text/plain'}, [""]
+      ]
+    end
   end
 end

@@ -12,6 +12,26 @@ module Rhosync
       end  
       [code, {'Content-Type' => 'text/plain'}, [""]]
     end
+    
+    def self.query(resource_name, partition)
+      result, records = {}, []
+      puts "received: #{resource_name.inspect}, #{partition.inspect}"
+      begin
+        klass = Kernel.const_get(resource_name)
+        records = klass.send(:rhosync_query, partition)
+      rescue NameError
+        raise "Missing Rhosync::Resource #{resource_name}"
+      rescue NoMethodError
+        raise "Method `rhosync_query` is not defined on Rhosync::Resource #{resource_name}"
+      end
+      puts "records: #{records.inspect}"
+      records.each do |record|
+        result[record.id.to_s] = record.attributes.dup
+      end
+      puts "result: #{result.inspect}"
+      puts "json: #{result.to_json}"
+      [200, {'Content-Type' => 'application/json'}, [result.to_json]]
+    end
   end
 end
 
@@ -24,6 +44,16 @@ if defined? Rails
       def self.call(env)
         req = Rack::Request.new(env)
         Rhosync::EndpointHelpers.authenticate(req.content_type, req.body.read)
+      end
+    end
+  end
+  
+  module Rhosync  
+    class Query
+      def self.call(env)
+        req = Rack::Request.new(env)
+        puts "params: #{req.params.inspect}"
+        Rhosync::EndpointHelpers.query(req.params["resource"], req.params["partition"])
       end
     end
   end
@@ -58,8 +88,12 @@ if defined? Sinatra
   #   end
   # end
   module Sinatra
-    class RhosyncEndpoints
+    module RhosyncEndpoints
       def self.registered(app)
+        app.post "/rhosync/query" do
+          Rhosync::EndpointHelpers.query(params[:resource], params[:partition])
+        end
+        
         app.post '/rhosync/authenticate' do
           Rhosync::EndpointHelpers.authenticate(
             request.env['CONTENT_TYPE'], request.body.read
