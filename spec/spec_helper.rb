@@ -17,6 +17,10 @@ end
 # stubs for sinatra
 module Sinatra
   def self.register(mod); end
+  module RhosyncEndpoints
+    def self.content_type(c_type); end
+    def self.status(code); end
+  end
 end
 
 require 'rhosync-rb'
@@ -33,6 +37,10 @@ module ActiveRecord
         "updated_at" => Time.parse("Wed Mar 09 02:11:06 UTC 2011"), 
         "id" => 1
       }
+    end
+    
+    def id
+      1
     end
     
     def warn(*args)

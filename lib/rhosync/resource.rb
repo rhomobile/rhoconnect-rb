@@ -21,6 +21,7 @@ module Rhosync
     end
     
     module InstanceMethods
+      attr_accessor :skip_rhosync_callbacks
       
       def rhosync_create
         call_client_method(:create)
@@ -38,19 +39,26 @@ module Rhosync
         #return all objects for this partition 
       end
       
-      private
-      
-      def call_client_method(action)
+      def normalized_attributes
         attribs = self.attributes.dup
         attribs.each do |key,value|
-          attribs[key] = Time.parse(value.to_s).to_i if value.is_a?(Time) or value.is_a?(DateTime)
-        end if Rhosync.configuration.sync_time_as_int    
-        begin
-          Rhosync::Client.new.send(action, self.class.to_s, self.class.get_partition, attribs)
-        rescue RestClient::Exception => re
-          warn "#{self.class.to_s}: rhosync_#{action} returned error: #{re.message} - #{re.http_body}"
-        rescue Exception => e
-          warn "#{self.class.to_s}: rhosync_#{action} returned unexpected error: #{e.message}"
+          attribs[key] = Time.parse(value.to_s).to_i.to_s if value.is_a?(Time) or value.is_a?(DateTime)
+        end if Rhosync.configuration.sync_time_as_int
+        attribs    
+      end
+      
+      private
+        
+      def call_client_method(action)
+        unless self.skip_rhosync_callbacks
+          attribs = self.normalized_attributes
+          begin
+            Rhosync::Client.new.send(action, self.class.to_s, self.class.get_partition, attribs)
+          rescue RestClient::Exception => re
+            warn "#{self.class.to_s}: rhosync_#{action} returned error: #{re.message} - #{re.http_body}"
+          rescue Exception => e
+            warn "#{self.class.to_s}: rhosync_#{action} returned unexpected error: #{e.message}"
+          end
         end
       end
       

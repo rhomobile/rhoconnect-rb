@@ -77,7 +77,7 @@ describe Rhosync::Resource do
       Rhosync::Client.stub!(:new).and_return(client)
       [:create, :update, :destroy].each do |action|
         client.should_receive(:send).with(
-          action, "TestModel7", :app, {"name"=>"John", "created_at"=>1299636666, "updated_at"=>1299636666, "id"=>1}
+          action, "TestModel7", :app, {"name"=>"John", "created_at"=>"1299636666", "updated_at"=>"1299636666", "id"=>1}
         )
         TestModel7.new.send("rhosync_#{action}".to_sym)
       end
