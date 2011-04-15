@@ -10,11 +10,12 @@ module Rhosync
       [code, {'Content-Type' => 'text/plain'}, [""]]
     end
     
-    def self.query(resource_name, partition)
-      action, content_type, result, records = :rhosync_query, 'application/json', {}, []
+    def self.query(content_type, body)
+      params = parse_params(content_type, body)
+      action, c_type, result, records = :rhosync_query, 'application/json', {}, []
       # Call resource rhosync_query class method
-      code, warning = get_resource(resource_name, action) do |klass|
-        records = klass.send(action, partition)
+      code, warning = get_resource(params['resource'], action) do |klass|
+        records = klass.send(action, params['partition'])
       end
       if code == 200
         # Serialize records into hash of hashes
@@ -24,18 +25,20 @@ module Rhosync
         result = result.to_json
       else
         result = warning
-        content_type = 'text/plain'
+        c_type = 'text/plain'
         # Log warning if something broke
         warn warning
       end    
-      [code, {'Content-Type' => content_type}, [result]]
+      [code, {'Content-Type' => c_type}, [result]]
     end
     
+    # TODO: test in datamapper!
     def self.create(content_type, body)
       params = parse_params(content_type, body)
       action, object_id = :create, ""
-      code, warning = get_resource(resource_name, action) do |klass|
-        instance = klass.send(:new, attributes)
+      code, warning = get_resource(params['resource'], action) do |klass|
+        instance = klass.send(:new)
+        instance.send(:rhosync_new, params['partition'], params['attributes'])
         instance.skip_rhosync_callbacks = true
         instance.save
         object_id = instance.id.to_s
@@ -75,26 +78,18 @@ if defined? Rails
   class Engine < Rails::Engine; end
   
   module Rhosync  
-    class Authenticate
+    class BaseEndpoint
       def self.call(env)
         req = Rack::Request.new(env)
-        Rhosync::EndpointHelpers.authenticate(req.content_type, req.body.read)
+        Rhosync::EndpointHelpers.send(self.to_s.downcase.split("::")[1].to_sym, req.content_type, req.body.read)
       end
     end
     
-    class Query
-      def self.call(env)
-        req = Rack::Request.new(env)
-        Rhosync::EndpointHelpers.query(req.params["resource"], req.params["partition"])
-      end
-    end
+    class Authenticate < BaseEndpoint; end
     
-    class Create
-      def self.call(env)
-        req = Rack::Request.new(env)
-        Rhosync::EndpointHelpers.create(req.content_type, req.body.read)
-      end
-    end
+    class Query < BaseEndpoint; end
+    
+    class Create < BaseEndpoint; end
   end
 end
 

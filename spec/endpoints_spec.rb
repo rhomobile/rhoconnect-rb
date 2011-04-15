@@ -34,14 +34,13 @@ describe Rhosync::EndpointHelpers do
     @creds = {'user' => 'john', 'pass' => 'secret'}
   end
   
-  context "on Rails endpoints" do
+  context "on Rails auth endpoint" do
     before(:each) do
       strio = mock("StringIO")
       strio.stub!(:read).and_return(JSON.generate(@creds))
       @env = mock("env")
       @env.stub!(:body).and_return(strio)
       @env.stub!(:content_type).and_return('application/json')
-      @env.stub!(:params).and_return(@params)
       Rack::Request.stub!(:new).and_return(@env)
     end
     
@@ -69,8 +68,21 @@ describe Rhosync::EndpointHelpers do
         200, {'Content-Type' => 'text/plain'}, [""]
       ]
     end
+  end
+    
+  context "on Create/Query endpoints" do
+    before(:each) do
+      @strio = mock("StringIO")
+      @env = mock("env")
+      @env.stub!(:content_type).and_return('application/json')
+    end
     
     it "should call query endpoint" do
+      @strio.stub!(:read).and_return(
+        {'partition' => 'testuser', 'resource' => 'Product'}.to_json
+      )
+      @env.stub!(:body).and_return(@strio)
+      Rack::Request.stub!(:new).and_return(@env)
       code, content_type, body = Rhosync::Query.call(@env)
       code.should == 200
       content_type.should == { "Content-Type" => "application/json" }
@@ -78,7 +90,10 @@ describe Rhosync::EndpointHelpers do
     end
     
     it "should fail on missing Rhosync::Resource" do
-      @env.stub!(:params).and_return({'partition' => 'testuser', 'resource' => 'Broken'})
+      @strio.stub!(:read).and_return(
+        {'partition' => 'testuser', 'resource' => 'Broken'}.to_json
+      )
+      @env.stub!(:body).and_return(@strio)
       Rack::Request.stub!(:new).and_return(@env)
       code, content_type, body = Rhosync::Query.call(@env)
       code.should == 404
@@ -87,19 +102,48 @@ describe Rhosync::EndpointHelpers do
     end
     
     it "should fail on undefined rhosync_query method" do
-      @env.stub!(:params).and_return({'partition' => 'testuser', 'resource' => 'BrokenResource'})
+      @strio.stub!(:read).and_return(
+        {'partition' => 'testuser', 'resource' => 'BrokenResource'}.to_json
+      )
+      @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
       code, content_type, body = Rhosync::Query.call(@env)
       code.should == 500
       content_type.should == { "Content-Type" => "text/plain" }
       body[0].should == "Method `rhosync_query` is not defined on Rhosync::Resource BrokenResource" 
     end
+    
+    it "should call create endpoint" do
+      params = {
+        'resource' => 'Product',
+        'partition' => 'app',
+        'attributes' => {
+          'name' => 'iphone',
+          'brand' => 'apple'
+        }
+      }
+      @strio.stub!(:read).and_return(params.to_json)
+      product = mock("Product")
+      product.stub!(:attributes=)
+      product.stub!(:rhosync_new)
+      product.stub!(:skip_rhosync_callbacks=)
+      product.stub!(:save)
+      product.stub!(:id).and_return(123)
+      Product.stub!(:new).and_return(product)
+      product.should_receive(:rhosync_new).with(params['partition'],params['attributes'])
+      @env.stub!(:body).and_return(@strio)      
+      Rack::Request.stub!(:new).and_return(@env)
+      code, content_type, body = Rhosync::Create.call(@env)
+      code.should == 200
+      content_type.should == { "Content-Type" => "text/plain" }
+      body.should == ['123']
+    end
   end
   
   context "on Sinatra endpoints" do    
     it "should register endpoints for authenticate and query" do
       strio = mock("StringIO")
-      strio.stub!(:read).and_return(JSON.generate(@creds))      
+      strio.stub!(:read).and_return(@creds.to_json)      
       req = mock("request")
       req.stub!(:body).and_return(strio)
       req.stub!(:env).and_return('CONTENT_TYPE' => 'application/json')
@@ -125,7 +169,7 @@ describe Rhosync::EndpointHelpers do
       Sinatra::RhosyncEndpoints.should_receive(:status).with(200)
       Sinatra::RhosyncEndpoints.should_receive(:content_type).with('application/json')
       result = Sinatra::RhosyncEndpoints.call_helper(
-        :query, @params['resource'], @params['partition']
+        :query, 'application/json', @params.to_json
       )
       JSON.parse(result).should == { '1' => Product.new.normalized_attributes }
     end

@@ -39,9 +39,9 @@ module ActiveRecord
       }
     end
     
-    def id
-      1
-    end
+    def attributes=(attribs); end
+    
+    def id; 1 end
     
     def warn(*args)
       Kernel.warn(args)

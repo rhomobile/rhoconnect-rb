@@ -39,6 +39,12 @@ module Rhosync
         #return all objects for this partition 
       end
       
+      # By default we ignore partition
+      def rhosync_new(partition, attributes)
+        self.attributes = attributes
+      end
+      
+      # Return Rhosync-friendly attributes list
       def normalized_attributes
         attribs = self.attributes.dup
         attribs.each do |key,value|
