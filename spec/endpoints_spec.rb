@@ -70,7 +70,7 @@ describe Rhosync::EndpointHelpers do
     end
   end
     
-  context "on Create/Query endpoints" do
+  context "on Create/Update/Query endpoints" do
     before(:each) do
       @strio = mock("StringIO")
       @env = mock("env")
@@ -138,9 +138,41 @@ describe Rhosync::EndpointHelpers do
       content_type.should == { "Content-Type" => "text/plain" }
       body.should == ['123']
     end
+    
+    it "should call update endpoint" do
+      pending
+      params = {
+        'resource' => 'Product',
+        'partition' => 'app',
+        'attributes' => {
+          'id' => '123',
+          'name' => 'iphone',
+          'brand' => 'apple'
+        }
+      }
+      @strio.stub!(:read).and_return(params.to_json)
+      product = mock("Product")
+      product.stub!(:attributes=)
+      product.stub!(:rhosync_update)
+      product.stub!(:skip_rhosync_callbacks=)
+      product.stub!(:save)
+      product.stub!(:id).and_return(123)
+      Product.stub!(:find).and_return(product)
+      product.should_receive(:rhosync_update).with(params['partition'],params['attributes'])
+      @env.stub!(:body).and_return(@strio)      
+      Rack::Request.stub!(:new).and_return(@env)
+      code, content_type, body = Rhosync::Update.call(@env)
+      code.should == 200
+      content_type.should == { "Content-Type" => "text/plain" }
+      body.should == [""]
+    end
   end
   
   context "on Sinatra endpoints" do    
+    class EndpointTest
+      include Sinatra::RhosyncHelpers
+    end
+  
     it "should register endpoints for authenticate and query" do
       strio = mock("StringIO")
       strio.stub!(:read).and_return(@creds.to_json)      
@@ -152,23 +184,26 @@ describe Rhosync::EndpointHelpers do
       Rhosync::EndpointHelpers.stub!(:query)
       app = mock("app")
       app.stub!(:post).and_yield
-      app.should_receive(:post).twice
-      Sinatra::RhosyncEndpoints.should_receive(:call_helper).twice
+      app.should_receive(:post).exactly(4).times
+      app.should_receive(:include).with(Sinatra::RhosyncHelpers)
+      Sinatra::RhosyncEndpoints.should_receive(:call_helper).exactly(4).times
       Sinatra::RhosyncEndpoints.registered(app)
     end
     
     it "should call helper for authenticate" do
-      Sinatra::RhosyncEndpoints.should_receive(:status).with(200)
-      Sinatra::RhosyncEndpoints.should_receive(:content_type).with('text/plain')
-      Sinatra::RhosyncEndpoints.call_helper(
+      app = EndpointTest.new
+      app.should_receive(:status).with(200)
+      app.should_receive(:content_type).with('text/plain')
+      app.call_helper(
         :authenticate, 'application/json', @creds.to_json
       ).should == ""
     end
     
     it "should call helper for query" do
-      Sinatra::RhosyncEndpoints.should_receive(:status).with(200)
-      Sinatra::RhosyncEndpoints.should_receive(:content_type).with('application/json')
-      result = Sinatra::RhosyncEndpoints.call_helper(
+      app = EndpointTest.new
+      app.should_receive(:status).with(200)
+      app.should_receive(:content_type).with('application/json')
+      result = app.call_helper(
         :query, 'application/json', @params.to_json
       )
       JSON.parse(result).should == { '1' => Product.new.normalized_attributes }

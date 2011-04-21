@@ -14,7 +14,7 @@ module Rhosync
       params = parse_params(content_type, body)
       action, c_type, result, records = :rhosync_query, 'application/json', {}, []
       # Call resource rhosync_query class method
-      code, warning = get_resource(params['resource'], action) do |klass|
+      code, error = get_resource(params['resource'], action) do |klass|
         records = klass.send(action, params['partition'])
       end
       if code == 200
@@ -24,43 +24,46 @@ module Rhosync
         end
         result = result.to_json
       else
-        result = warning
+        result = error
         c_type = 'text/plain'
         # Log warning if something broke
-        warn warning
+        warn error
       end    
       [code, {'Content-Type' => c_type}, [result]]
     end
     
-    # TODO: test in datamapper!
     def self.create(content_type, body)
       params = parse_params(content_type, body)
       action, object_id = :create, ""
-      code, warning = get_resource(params['resource'], action) do |klass|
+      code, error = get_resource(params['resource'], action) do |klass|
         instance = klass.send(:new)
         instance.send(:rhosync_new, params['partition'], params['attributes'])
         instance.skip_rhosync_callbacks = true
         instance.save
         object_id = instance.id.to_s
       end
-      [code, {'Content-Type' => "text/plain"}, [warning || object_id]]
+      [code, {'Content-Type' => "text/plain"}, [error || object_id]]
     end
     
     private
     
     def self.get_resource(resource_name, action)
-      code, warning = 200, nil
+      code, error = 200, nil
       begin
         klass = Kernel.const_get(resource_name)
         yield klass
       rescue NoMethodError
-        warning = "Method `#{action}` is not defined on Rhosync::Resource #{resource_name}"
+        error = "Method `#{action}` is not defined on Rhosync::Resource #{resource_name}"
         code = 500
       rescue NameError
-        warning = "Missing Rhosync::Resource #{resource_name}"
+        error = "Missing Rhosync::Resource #{resource_name}"
         code = 404
+      # TODO: catch HaltException and Exception here, built-in source adapter will handle them
+      rescue Exception => e
+        error = e.message
+        code = 200
       end
-      [code, warning]
+      [code, error]
     end
     
     def self.parse_params(content_type, params)
@@ -90,6 +93,8 @@ if defined? Rails
     class Query < BaseEndpoint; end
     
     class Create < BaseEndpoint; end
+    
+    class Update < BaseEndpoint; end
   end
 end
 
@@ -116,30 +121,32 @@ if defined? Sinatra
   # require 'rhosync-rb'
   # 
   # class Myapp < Sinatra::Base
-  #   register Sinatra::RhosyncAuthenticate
+  #   register Sinatra::RhosyncEndpoints
   #   get '/' do
   #     'hello world'
   #   end
   # end
   module Sinatra
-    module RhosyncEndpoints
-      def self.registered(app)
-        app.post '/rhosync/authenticate' do
-          call_helper(:authenticate, request.env['CONTENT_TYPE'], request.body.read)
-        end
-        
-        app.post "/rhosync/query" do
-          call_helper(:query, params[:resource], params[:partition])
-        end
-      end
-      
-      def self.call_helper(method,*args)
+    module RhosyncHelpers
+      def call_helper(method,*args)
         code, c_type, body = Rhosync::EndpointHelpers.send(method,*args)
         content_type c_type['Content-Type']
         status code
         body[0]
       end
-      
+    end
+    
+    module RhosyncEndpoints
+      def self.registered(app)
+        # install our endpoint helpers
+        app.send(:include, RhosyncHelpers)
+
+        [:authenticate,:query,:create,:update].each do |endpoint|
+          app.post "/rhosync/#{endpoint}" do
+            call_helper(endpoint, request.env['CONTENT_TYPE'], request.body.read)
+          end
+        end
+      end
     end
     register RhosyncEndpoints
   end
