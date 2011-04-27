@@ -47,6 +47,14 @@ module ActiveRecord
       Kernel.warn(args)
     end
     
+    def save; end
+    
+    def self.find(object_id)
+      self.new
+    end
+    
+    def destroy; end
+    
     class << self
       attr_accessor :create_callback,:destroy_callback,:update_callback
       

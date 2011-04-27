@@ -4,7 +4,7 @@ module Rhosync
   class EndpointHelpers
     def self.authenticate(content_type, body)
       code, params = 200, parse_params(content_type, body)
-      if params and Rhosync.configuration.authenticate
+      if Rhosync.configuration.authenticate
         code = 401 unless Rhosync.configuration.authenticate.call(params)
       end  
       [code, {'Content-Type' => 'text/plain'}, [""]]
@@ -32,17 +32,27 @@ module Rhosync
       [code, {'Content-Type' => c_type}, [result]]
     end
     
-    def self.create(content_type, body)
+    def self.on_cud(action, content_type, body)
       params = parse_params(content_type, body)
-      action, object_id = :create, ""
+      object_id = ""
       code, error = get_resource(params['resource'], action) do |klass|
-        instance = klass.send(:new)
-        instance.send(:rhosync_new, params['partition'], params['attributes'])
-        instance.skip_rhosync_callbacks = true
-        instance.save
-        object_id = instance.id.to_s
+        object_id = klass.send("rhosync_receive_#{action}".to_sym, 
+          params['partition'], params['attributes'])
+        object_id = object_id.to_s if object_id
       end
       [code, {'Content-Type' => "text/plain"}, [error || object_id]]
+    end
+    
+    def self.create(content_type, body)
+      self.on_cud(:create, content_type, body)
+    end
+    
+    def self.update(content_type, body)
+      self.on_cud(:update, content_type, body)  
+    end
+    
+    def self.delete(content_type, body)
+      self.on_cud(:delete, content_type, body)  
     end
     
     private
@@ -54,14 +64,14 @@ module Rhosync
         yield klass
       rescue NoMethodError
         error = "Method `#{action}` is not defined on Rhosync::Resource #{resource_name}"
-        code = 500
+        code = 404
       rescue NameError
         error = "Missing Rhosync::Resource #{resource_name}"
         code = 404
       # TODO: catch HaltException and Exception here, built-in source adapter will handle them
       rescue Exception => e
         error = e.message
-        code = 200
+        code = 500
       end
       [code, error]
     end
@@ -70,7 +80,7 @@ module Rhosync
       if content_type and content_type.match(/^application\/json/) and params and params.length > 2
         JSON.parse(params)
       else 
-        nil
+        {}
       end
     end
   end
@@ -95,6 +105,8 @@ if defined? Rails
     class Create < BaseEndpoint; end
     
     class Update < BaseEndpoint; end
+    
+    class Delete < BaseEndpoint; end
   end
 end
 
@@ -141,7 +153,7 @@ if defined? Sinatra
         # install our endpoint helpers
         app.send(:include, RhosyncHelpers)
 
-        [:authenticate,:query,:create,:update].each do |endpoint|
+        [:authenticate,:query,:create,:update,:delete].each do |endpoint|
           app.post "/rhosync/#{endpoint}" do
             call_helper(endpoint, request.env['CONTENT_TYPE'], request.body.read)
           end

@@ -18,6 +18,31 @@ module Rhosync
       def get_partition
         @partition.is_a?(Proc) ? @partition.call : @partition
       end
+      
+      def rhosync_receive_create(partition, attributes)
+        instance = self.send(:new)
+        instance.send(:rhosync_apply_attributes, partition, attributes)
+        instance.skip_rhosync_callbacks = true
+        instance.save
+        instance.id #=> return object id
+      end
+      
+      def rhosync_receive_update(partition, attributes)
+        object_id = attributes.delete('id')
+        instance = self.send(is_datamapper? ? :get : :find, object_id)
+        instance.send(:rhosync_apply_attributes, partition, attributes)
+        instance.skip_rhosync_callbacks = true
+        instance.save
+        object_id
+      end
+      
+      def rhosync_receive_delete(partition, attributes)
+        object_id = attributes['id']
+        instance = self.send(is_datamapper? ? :get : :find, object_id)      
+        instance.skip_rhosync_callbacks = true
+        instance.destroy
+        object_id
+      end
     end
     
     module InstanceMethods
@@ -40,7 +65,8 @@ module Rhosync
       end
       
       # By default we ignore partition
-      def rhosync_new(partition, attributes)
+      # TODO: Document - this is user-facing function
+      def rhosync_apply_attributes(partition, attributes)
         self.attributes = attributes
       end
       

@@ -68,9 +68,15 @@ describe Rhosync::EndpointHelpers do
         200, {'Content-Type' => 'text/plain'}, [""]
       ]
     end
+    
+    it "should call authenticate block with empty params" do
+      Rhosync::EndpointHelpers.authenticate('text/plain', '').should == [
+        200, {"Content-Type"=>"text/plain"}, [""]
+      ]
+    end
   end
     
-  context "on Create/Update/Query endpoints" do
+  context "on Create/Update/Delete/Query endpoints" do
     before(:each) do
       @strio = mock("StringIO")
       @env = mock("env")
@@ -108,9 +114,22 @@ describe Rhosync::EndpointHelpers do
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
       code, content_type, body = Rhosync::Query.call(@env)
-      code.should == 500
+      code.should == 404
       content_type.should == { "Content-Type" => "text/plain" }
       body[0].should == "Method `rhosync_query` is not defined on Rhosync::Resource BrokenResource" 
+    end
+    
+    it "should fail on unknown exception" do
+      @strio.stub!(:read).and_return(
+        {'partition' => 'testuser', 'resource' => 'Product'}.to_json
+      )
+      @env.stub!(:body).and_return(@strio)      
+      Rack::Request.stub!(:new).and_return(@env)
+      Product.stub!(:rhosync_receive_create).and_return { raise "error in create" }
+      code, content_type, body = Rhosync::Create.call(@env)
+      code.should == 500
+      content_type.should == { "Content-Type" => "text/plain" }
+      body[0].should == "error in create"
     end
     
     it "should call create endpoint" do
@@ -123,24 +142,15 @@ describe Rhosync::EndpointHelpers do
         }
       }
       @strio.stub!(:read).and_return(params.to_json)
-      product = mock("Product")
-      product.stub!(:attributes=)
-      product.stub!(:rhosync_new)
-      product.stub!(:skip_rhosync_callbacks=)
-      product.stub!(:save)
-      product.stub!(:id).and_return(123)
-      Product.stub!(:new).and_return(product)
-      product.should_receive(:rhosync_new).with(params['partition'],params['attributes'])
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
       code, content_type, body = Rhosync::Create.call(@env)
       code.should == 200
       content_type.should == { "Content-Type" => "text/plain" }
-      body.should == ['123']
+      body.should == ['1']
     end
     
     it "should call update endpoint" do
-      pending
       params = {
         'resource' => 'Product',
         'partition' => 'app',
@@ -151,21 +161,33 @@ describe Rhosync::EndpointHelpers do
         }
       }
       @strio.stub!(:read).and_return(params.to_json)
-      product = mock("Product")
-      product.stub!(:attributes=)
-      product.stub!(:rhosync_update)
-      product.stub!(:skip_rhosync_callbacks=)
-      product.stub!(:save)
-      product.stub!(:id).and_return(123)
-      Product.stub!(:find).and_return(product)
-      product.should_receive(:rhosync_update).with(params['partition'],params['attributes'])
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
       code, content_type, body = Rhosync::Update.call(@env)
       code.should == 200
       content_type.should == { "Content-Type" => "text/plain" }
-      body.should == [""]
+      body.should == ["123"]
     end
+    
+    it "should call delete endpoint" do
+      params = {
+        'resource' => 'Product',
+        'partition' => 'app',
+        'attributes' => {
+          'id' => '123',
+          'name' => 'iphone',
+          'brand' => 'apple'
+        }
+      }
+      @strio.stub!(:read).and_return(params.to_json)
+      @env.stub!(:body).and_return(@strio)      
+      Rack::Request.stub!(:new).and_return(@env)
+      code, content_type, body = Rhosync::Delete.call(@env)
+      code.should == 200
+      content_type.should == { "Content-Type" => "text/plain" }
+      body.should == ["123"]
+    end
+      
   end
   
   context "on Sinatra endpoints" do    
@@ -184,9 +206,9 @@ describe Rhosync::EndpointHelpers do
       Rhosync::EndpointHelpers.stub!(:query)
       app = mock("app")
       app.stub!(:post).and_yield
-      app.should_receive(:post).exactly(4).times
+      app.should_receive(:post).exactly(5).times
       app.should_receive(:include).with(Sinatra::RhosyncHelpers)
-      Sinatra::RhosyncEndpoints.should_receive(:call_helper).exactly(4).times
+      Sinatra::RhosyncEndpoints.should_receive(:call_helper).exactly(5).times
       Sinatra::RhosyncEndpoints.registered(app)
     end
     
