@@ -116,7 +116,7 @@ describe Rhosync::EndpointHelpers do
       code, content_type, body = Rhosync::Query.call(@env)
       code.should == 404
       content_type.should == { "Content-Type" => "text/plain" }
-      body[0].should == "Method `rhosync_query` is not defined on Rhosync::Resource BrokenResource" 
+      body[0].should == "error on method `rhosync_query` for BrokenResource: undefined method `rhosync_query' for BrokenResource:Class" 
     end
     
     it "should fail on unknown exception" do
