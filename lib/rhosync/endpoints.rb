@@ -14,7 +14,7 @@ module Rhosync
       params = parse_params(content_type, body)
       action, c_type, result, records = :rhosync_query, 'application/json', {}, []
       # Call resource rhosync_query class method
-      code, error = get_resource(params['resource'], action) do |klass|
+      code, error = get_rhosync_resource(params['resource'], action) do |klass|
         records = klass.send(action, params['partition'])
       end
       if code == 200
@@ -35,7 +35,7 @@ module Rhosync
     def self.on_cud(action, content_type, body)
       params = parse_params(content_type, body)
       object_id = ""
-      code, error = get_resource(params['resource'], action) do |klass|
+      code, error = get_rhosync_resource(params['resource'], action) do |klass|
         object_id = klass.send("rhosync_receive_#{action}".to_sym,
           params['partition'], params['attributes'])
         object_id = object_id.to_s if object_id
@@ -57,7 +57,7 @@ module Rhosync
     
     private
     
-    def self.get_resource(resource_name, action)
+    def self.get_rhosync_resource(resource_name, action)
       code, error = 200, nil
       begin
         klass = Kernel.const_get(resource_name)
