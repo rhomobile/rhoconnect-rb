@@ -14,7 +14,7 @@ module Rhosync
       params = parse_params(content_type, body)
       action, c_type, result, records = :rhosync_query, 'application/json', {}, []
       # Call resource rhosync_query class method
-      code, error = get_resource(params['resource'], action) do |klass|
+      code, error = get_rhosync_resource(params['resource'], action) do |klass|
         records = klass.send(action, params['partition'])
       end
       if code == 200
@@ -35,8 +35,8 @@ module Rhosync
     def self.on_cud(action, content_type, body)
       params = parse_params(content_type, body)
       object_id = ""
-      code, error = get_resource(params['resource'], action) do |klass|
-        object_id = klass.send("rhosync_receive_#{action}".to_sym, 
+      code, error = get_rhosync_resource(params['resource'], action) do |klass|
+        object_id = klass.send("rhosync_receive_#{action}".to_sym,
           params['partition'], params['attributes'])
         object_id = object_id.to_s if object_id
       end
@@ -57,13 +57,13 @@ module Rhosync
     
     private
     
-    def self.get_resource(resource_name, action)
+    def self.get_rhosync_resource(resource_name, action)
       code, error = 200, nil
       begin
         klass = Kernel.const_get(resource_name)
         yield klass
-      rescue NoMethodError
-        error = "Method `#{action}` is not defined on Rhosync::Resource #{resource_name}"
+      rescue NoMethodError => ne
+        error = "error on method `#{action}` for #{resource_name}: #{ne.message}"
         code = 404
       rescue NameError
         error = "Missing Rhosync::Resource #{resource_name}"
@@ -88,7 +88,9 @@ end
 
 # Detect if we're running inside of rails
 if defined? Rails
-  class Engine < Rails::Engine; end
+  #if Rails::VERSION::STRING.to_i >= 3
+    class Engine < Rails::Engine; end
+  #end
   
   module Rhosync  
     class BaseEndpoint
@@ -100,7 +102,7 @@ if defined? Rails
     
     class Authenticate < BaseEndpoint; end
     
-    class Query < BaseEndpoint; end
+    class Query < BaseEndpoint;  end
     
     class Create < BaseEndpoint; end
     
