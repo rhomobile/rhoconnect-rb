@@ -120,7 +120,7 @@ if defined? Sinatra
   #
   # require 'rubygems'
   # require 'sinatra'
-  # require 'rhosync-rb'
+  # require 'rhoconnect-rb'
   #
   # get '/' do
   #  'hello world'
@@ -130,7 +130,7 @@ if defined? Sinatra
   # the module inside your class. To use in a modular application:
   #
   # require 'sinatra/base'
-  # require 'rhosync-rb'
+  # require 'rhoconnect-rb'
   # 
   # class Myapp < Sinatra::Base
   #   register Sinatra::RhosyncEndpoints

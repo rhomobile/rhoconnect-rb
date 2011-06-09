@@ -1,1 +1,1 @@
-require 'rhosync-rb'
+require 'rhoconnect-rb'

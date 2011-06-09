@@ -23,7 +23,7 @@ module Sinatra
   end
 end
 
-require 'rhosync-rb'
+require 'rhoconnect-rb'
 
 
 # define ActiveRecord and DM here for testing

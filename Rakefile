@@ -17,9 +17,9 @@ RSpec::Core::RakeTask.new(:rcov) do |t|
   t.rcov_opts =  ['--exclude', 'spec/*,gems/*']
 end
 
-desc "Build the gem using rhosync-rb.gemspec"
+desc "Build the gem using rhoconnect-rb.gemspec"
 task :gem do
-  bundle_exec("gem build rhosync-rb.gemspec")
+  bundle_exec("gem build rhoconnect-rb.gemspec")
 end
 
 task :default => :spec

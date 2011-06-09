@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require 'rhosync/version'
 
 Gem::Specification.new do |s|
-  s.name        = "rhosync-rb"
+  s.name        = "rhoconnect-rb"
   s.version     = Rhosync::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Rhomobile"]
