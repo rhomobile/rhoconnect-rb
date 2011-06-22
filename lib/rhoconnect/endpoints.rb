@@ -1,20 +1,20 @@
 require 'json'
 
-module Rhosync
+module Rhoconnect
   class EndpointHelpers
     def self.authenticate(content_type, body)
       code, params = 200, parse_params(content_type, body)
-      if Rhosync.configuration.authenticate
-        code = 401 unless Rhosync.configuration.authenticate.call(params)
+      if Rhoconnect.configuration.authenticate
+        code = 401 unless Rhoconnect.configuration.authenticate.call(params)
       end  
       [code, {'Content-Type' => 'text/plain'}, [""]]
     end
     
     def self.query(content_type, body)
       params = parse_params(content_type, body)
-      action, c_type, result, records = :rhosync_query, 'application/json', {}, []
-      # Call resource rhosync_query class method
-      code, error = get_rhosync_resource(params['resource'], action) do |klass|
+      action, c_type, result, records = :rhoconnect_query, 'application/json', {}, []
+      # Call resource rhoconnect_query class method
+      code, error = get_rhoconnect_resource(params['resource'], action) do |klass|
         records = klass.send(action, params['partition'])
       end
       if code == 200
@@ -35,8 +35,8 @@ module Rhosync
     def self.on_cud(action, content_type, body)
       params = parse_params(content_type, body)
       object_id = ""
-      code, error = get_rhosync_resource(params['resource'], action) do |klass|
-        object_id = klass.send("rhosync_receive_#{action}".to_sym,
+      code, error = get_rhoconnect_resource(params['resource'], action) do |klass|
+        object_id = klass.send("rhoconnect_receive_#{action}".to_sym,
           params['partition'], params['attributes'])
         object_id = object_id.to_s if object_id
       end
@@ -57,7 +57,7 @@ module Rhosync
     
     private
     
-    def self.get_rhosync_resource(resource_name, action)
+    def self.get_rhoconnect_resource(resource_name, action)
       code, error = 200, nil
       begin
         klass = Kernel.const_get(resource_name)
@@ -66,7 +66,7 @@ module Rhosync
         error = "error on method `#{action}` for #{resource_name}: #{ne.message}"
         code = 404
       rescue NameError
-        error = "Missing Rhosync::Resource #{resource_name}"
+        error = "Missing Rhoconnect::Resource #{resource_name}"
         code = 404
       # TODO: catch HaltException and Exception here, built-in source adapter will handle them
       rescue Exception => e
@@ -92,11 +92,11 @@ if defined? Rails
     class Engine < Rails::Engine; end
   #end
   
-  module Rhosync  
+  module Rhoconnect
     class BaseEndpoint
       def self.call(env)
         req = Rack::Request.new(env)
-        Rhosync::EndpointHelpers.send(self.to_s.downcase.split("::")[1].to_sym, req.content_type, req.body.read)
+        Rhoconnect::EndpointHelpers.send(self.to_s.downcase.split("::")[1].to_sym, req.content_type, req.body.read)
       end
     end
     
@@ -135,33 +135,33 @@ if defined? Sinatra
   # require 'rhoconnect-rb'
   # 
   # class Myapp < Sinatra::Base
-  #   register Sinatra::RhosyncEndpoints
+  #   register Sinatra::RhoconnectEndpoints
   #   get '/' do
   #     'hello world'
   #   end
   # end
   module Sinatra
-    module RhosyncHelpers
+    module RhoconnectHelpers
       def call_helper(method,*args)
-        code, c_type, body = Rhosync::EndpointHelpers.send(method,*args)
+        code, c_type, body = Rhoconnect::EndpointHelpers.send(method,*args)
         content_type c_type['Content-Type']
         status code
         body[0]
       end
     end
     
-    module RhosyncEndpoints
+    module RhoconnectEndpoints
       def self.registered(app)
         # install our endpoint helpers
-        app.send(:include, RhosyncHelpers)
+        app.send(:include, RhoconnectHelpers)
 
         [:authenticate,:query,:create,:update,:delete].each do |endpoint|
-          app.post "/rhosync/#{endpoint}" do
+          app.post "/rhoconnect/#{endpoint}" do
             call_helper(endpoint, request.env['CONTENT_TYPE'], request.body.read)
           end
         end
       end
     end
-    register RhosyncEndpoints
+    register RhoconnectEndpoints
   end
 end

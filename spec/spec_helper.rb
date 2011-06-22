@@ -17,7 +17,7 @@ end
 # stubs for sinatra
 module Sinatra
   def self.register(mod); end
-  module RhosyncEndpoints
+  module RhoconnectEndpoints
     def self.content_type(c_type); end
     def self.status(code); end
   end
@@ -90,11 +90,11 @@ module DataMapper
     end
     
     module ClassMethods
-      attr_accessor :rhosync_callbacks
+      attr_accessor :rhoconnect_callbacks
       
       def after(action, callback)
-        @rhosync_callbacks ||= {}
-        @rhosync_callbacks[action] = callback
+        @rhoconnect_callbacks ||= {}
+        @rhoconnect_callbacks[action] = callback
       end
     end
   end

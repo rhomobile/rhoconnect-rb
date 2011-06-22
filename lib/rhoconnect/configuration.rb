@@ -1,4 +1,4 @@
-module Rhosync
+module Rhoconnect
   class Configuration
     attr_accessor :uri, :token, :authenticate, :sync_time_as_int, :app_endpoint, :http_proxy
     
@@ -12,21 +12,21 @@ module Rhosync
     attr_accessor :configuration
   end
 
-  # Configure RhoSync in an initializer:
-  # like config/initializers/rhosync.rb
+  # Configure Rhoconnect in an initializer:
+  # like config/initializers/rhoconnect.rb
   #
-  # Setup the RhoSync uri and api token.  
-  # Use rhosync:get_token to get the token value.
+  # Setup the Rhoconnect uri and api token.
+  # Use rhoconnect:get_token to get the token value.
   #
-  #   config.uri   = "http://myrhosync.com"
+  #   config.uri   = "http://myrhoconnect.com"
   #   config.token = "secrettoken"
   #   config.authenticate = lambda { |credentials| 
   #     User.authenticate(credentials) 
   #   }
   #
   # @example
-  #   Rhosync.configure do |config|
-  #     config.uri   = "http://myrhosync.com"
+  #   Rhoconnect.configure do |config|
+  #     config.uri   = "http://myrhoconnect.com"
   #     config.token = "secrettoken"
   #   end
   def self.configure
@@ -42,8 +42,8 @@ module Rhosync
       uri      = uri.to_s
     end
     token  ||=  ENV['token'] || self.configuration.token
-    Rhosync::Client.set_app_endpoint(uri + "/api/source/save_adapter?attributes[adapter_url]=#{endpoint_url}&api_token=#{token}") if endpoint_url && uri && token
+    Rhoconnect::Client.set_app_endpoint(uri + "/api/source/save_adapter?attributes[adapter_url]=#{endpoint_url}&api_token=#{token}") if endpoint_url && uri && token
   end
 end
 
-Rhosync.configure { }
+Rhoconnect.configure { }

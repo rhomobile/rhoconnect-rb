@@ -1,17 +1,17 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require 'rhosync/version'
+require 'rhoconnect/version'
 
 Gem::Specification.new do |s|
   s.name        = "rhoconnect-rb"
-  s.version     = Rhosync::VERSION
+  s.version     = Rhoconnect::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Rhomobile"]
   s.date        = Time.now.strftime('%Y-%m-%d')
   s.email       = ["support@rhomobile.com"]
   s.homepage    = %q{http://rhomobile.com}
-  s.summary     = %q{RhoSync rails plugin}
-  s.description = %q{RhoSync rails plugin}
+  s.summary     = %q{Rhoconnect rails plugin}
+  s.description = %q{Rhoconnect rails plugin}
 
   s.rubyforge_project = nil  
   s.add_dependency('rest-client', '~>1.6.1')

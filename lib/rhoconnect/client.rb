@@ -1,6 +1,6 @@
 require 'uri'
 
-module Rhosync
+module Rhoconnect
   class Client
     attr_accessor :uri, :token
 
@@ -10,15 +10,16 @@ module Rhosync
     
     # allow configuration, uri or environment variable initialization
     def initialize(params = {})
-      uri = params[:uri] || Rhosync.configuration.uri || ENV['RHOSYNC_URL']
-      raise ArgumentError.new("Please provide a :uri or set RHOSYNC_URL") unless uri
-      uri = URI.parse(uri)
+      uri = params[:uri] || Rhoconnect.configuration.uri || ENV['RHOCONNECT_URL']
+      raise ArgumentError.new("Please provide a :uri or set RHOCONNECT_URL") unless uri
+      @uri = URI.parse(uri)
       
-      @token = params[:token] || Rhosync.configuration.token || uri.user
-      uri.user = nil; @uri = uri.to_s
+      @token = params[:token] || Rhoconnect.configuration.token || @uri.user
+      @uri.user = nil; @uri = @uri.to_s
+      
       raise ArgumentError.new("Please provide a :token or set it in uri") unless @token
       
-      RestClient.proxy = ENV['HTTP_PROXY'] || ENV['http_proxy'] || Rhosync.configuration.http_proxy
+      RestClient.proxy = ENV['HTTP_PROXY'] || ENV['http_proxy'] || Rhoconnect.configuration.http_proxy
     end
     
     def create(source_name, partition, obj = {})
@@ -82,7 +83,7 @@ module Rhosync
     
     def api_headers   # :nodoc:
       {
-        'User-Agent'           => Rhosync::VERSION,
+        'User-Agent'           => Rhoconnect::VERSION,
         'X-Ruby-Version'       => RUBY_VERSION,
         'X-Ruby-Platform'      => RUBY_PLATFORM
       }

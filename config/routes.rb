@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
-  match '/rhosync/authenticate' => Rhosync::Authenticate
-  match '/rhosync/query' => Rhosync::Query
-  match '/rhosync/create' => Rhosync::Create
-  match '/rhosync/update' => Rhosync::Update
-  match '/rhosync/delete' => Rhosync::Delete
+  match '/rhoconnect/authenticate' => Rhoconnect::Authenticate
+  match '/rhoconnect/query' => Rhoconnect::Query
+  match '/rhoconnect/create' => Rhoconnect::Create
+  match '/rhoconnect/update' => Rhoconnect::Update
+  match '/rhoconnect/delete' => Rhoconnect::Delete
 end
