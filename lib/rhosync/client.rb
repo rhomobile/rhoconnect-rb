@@ -3,6 +3,10 @@ require 'uri'
 module Rhosync
   class Client
     attr_accessor :uri, :token
+
+    def self.set_app_endpoint(url)
+      RestClient::Request.execute(:method => :post, :url => url, :timeout => 2000)
+    end
     
     # allow configuration, uri or environment variable initialization
     def initialize(params = {})
@@ -11,10 +15,10 @@ module Rhosync
       uri = URI.parse(uri)
       
       @token = params[:token] || Rhosync.configuration.token || uri.user
-      uri.user = nil; @uri = uri.to_s      
+      uri.user = nil; @uri = uri.to_s
       raise ArgumentError.new("Please provide a :token or set it in uri") unless @token
       
-      RestClient.proxy = ENV['HTTP_PROXY'] || ENV['http_proxy']
+      RestClient.proxy = ENV['HTTP_PROXY'] || ENV['http_proxy'] || Rhosync.configuration.http_proxy
     end
     
     def create(source_name, partition, obj = {})
@@ -52,7 +56,7 @@ module Rhosync
     def send_objects(action, source_name, partition, obj = {}) # :nodoc:
       validate_args(source_name, partition, obj)
       
-      process(:post, "/api/#{action}", 
+      process(:post, "/api/source/#{action}",
         {
           :source_id => source_name,
           :user_id => partition,
