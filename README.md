@@ -1,9 +1,9 @@
 rhoconnect-rb
 ===
 
-A ruby client library for the [Rhoconnect](http://rhomobile.com/products/rhosync) App Integration Server.
+A ruby library for the [Rhoconnect](http://rhomobile.com/products/rhosync) App Integration Server.
 
-Using rhoconnect-rb, your application's model data will transparently synchronize with a mobile application built using the [Rhodes framework](http://rhomobile.com/products/rhodes), or any of the available [Rhoconnect clients](http://rhomobile.com/products/rhosync/).  This client includes built-in support for [ActiveRecord](http://ar.rubyonrails.org/) and [DataMapper](http://datamapper.org/) models.
+Using rhoconnect-rb, your application's model data will transparently synchronize with a mobile application built on the [Rhodes framework](http://rhomobile.com/products/rhodes), or any of the available [Rhoconnect clients](http://rhomobile.com/products/rhosync/).  This client includes built-in support for [ActiveRecord](http://ar.rubyonrails.org/) and [DataMapper](http://datamapper.org/) models.
 
 ## Getting started
 
@@ -26,13 +26,15 @@ Or, if you are using DataMapper:
 	  include DataMapper::Resource
 	  include Rhoconnect::Resource
 	end
-	
-Next, your models will need to declare a partition key for `rhoconnect-rb`.  This partition key is used by `rhoconnect-rb` to uniquely identify the model dataset when it is stored in a Rhoconnect application.  It is typically an attribute on the model or related model.  `rhoconnect-rb` supports two types of partitions:
 
-* :app - No unique key will be used, a shared dataset is used for all users.
+### Partitioning Datasets
+	
+Next, your models will need to declare a partition key for `rhoconnect-rb`.  This partition key is used by `rhoconnect-rb` to uniquely identify the model dataset when it is stored in a rhoconnect instance.  It is typically an attribute on the model or related model.  `rhoconnect-rb` supports two types of partitions:
+
+* :app - No unique key will be used, a shared dataset is synchronzied for all users.
 * lambda { some lambda } - Execute a lambda which returns the unique key string.
 
-For example, the `Product` model above might have a `belongs_to :user` relationship.  The partition identifying the username would be declared as:
+For example, the `Product` model above might have a `belongs_to :user` relationship.  This provides us a simple way to organize the `Product` dataset for rhoconnect by reusing this relationship.  The partition identifying a username would be declared as:
 
 	class Product < ActiveRecord::Base
 	  include Rhoconnect::Resource
@@ -42,7 +44,29 @@ For example, the `Product` model above might have a `belongs_to :user` relations
 	  partition lambda { self.user.username }
 	end
 	
+Now all of the `Product` data synchronized by rhoconnect will organized by `self.user.username`.  Note: You can also used a fixed key if the dataset doesn't require a dynamic value:
+
+	partition lambda { :app }
+	
 For more information about Rhoconnect partitions, please refer to the [Rhoconnect docs](http://docs.rhomobile.com/rhosync/source-adapters#data-partitioning).
+
+### Querying Dataset
+
+`rhoconnect-rb` installs a `/rhoconnect/query` route in your application which the Rhoconnect instance invokes to query the dataset for the dataset you want to synchronize.  This route is mapped to a `rhoconnect_query` method in your model.  This method should return a collection of objects:
+
+	class Product < ActiveRecord::Base
+	  include Rhoconnect::Resource
+	  
+	  belongs_to :user
+	
+	  partition lambda { self.user.username }
+	
+	  def self.rhoconnect_query(partition)
+	    Product.where(:user_id => partition)
+	  end
+	end
+
+In this example, `self.rhoconnect_query` returns a list of products where the partition string (provided by the rhoconnect instance) matches the `user_id` field in the products table.  
 
 ## Meta
 Created and maintained by Vladimir Tarasov and Lars Burgess.
