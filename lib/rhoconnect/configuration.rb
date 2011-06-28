@@ -34,7 +34,7 @@ module Rhoconnect
     yield(configuration)
     # make a call to rhoconnect instance to set app url
     endpoint_url = ENV['APP_ENDPOINT'] || self.configuration.app_endpoint
-    uri          = ENV['URI'] || self.configuration.uri
+    uri          = ENV['RHOCONNECT_URL'] || self.configuration.uri
     if uri
       uri = URI.parse(uri)
       token    = uri.user
@@ -42,7 +42,10 @@ module Rhoconnect
       uri      = uri.to_s
     end
     token ||= ENV['token'] || self.configuration.token
-    Rhoconnect::Client.set_app_endpoint(uri + "/api/source/save_adapter?attributes[adapter_url]=#{endpoint_url}&api_token=#{token}") if endpoint_url && uri && token
+    Rhoconnect::Client.set_app_endpoint(:url => uri + "/api/source/save_adapter", 
+      :payload => {:attributes => {:adapter_url => endpoint_url}, :api_token => token}.to_json,
+      :headers => {:content_type => 'application/json'}
+    ) if endpoint_url && uri && token
   end
 end
 

@@ -4,8 +4,12 @@ module Rhoconnect
   class Client
     attr_accessor :uri, :token
 
-    def self.set_app_endpoint(url)
-      RestClient::Request.execute(:method => :post, :url => url, :timeout => 2000)
+    def self.set_app_endpoint(args)
+      RestClient::Request.execute(
+        :method => :post, :url => args[:url], 
+        :payload => args[:payload], :timeout => 2000,
+        :headers => args[:headers]
+      )
     end
     
     # allow configuration, uri or environment variable initialization

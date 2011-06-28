@@ -60,7 +60,7 @@ describe Rhoconnect::EndpointHelpers do
     
     it "should return true if no authenticate block exists" do
       Rhoconnect.configure do |config|
-        config.uri = "http://test.Rhoconnect.com"
+        config.uri = "http://test.rhoconnect.com"
         config.token = "token" 
       end
       Rhoconnect.configuration.authenticate.should be_nil
