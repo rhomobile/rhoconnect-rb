@@ -1,9 +1,9 @@
 rhoconnect-rb
 ===
 
-A ruby client library for the [Rhoconnect](http://rhomobile.com/products/Rhoconnect) App Integration Server.
+A ruby client library for the [Rhoconnect](http://rhomobile.com/products/rhosync) App Integration Server.
 
-Using rhoconnect-rb, your application's model data will transparently synchronize with a mobile application built using the [Rhodes framework](http://rhomobile.com/products/rhodes), or any of the available [Rhoconnect clients](http://rhomobile.com/products/Rhoconnect/).  This client includes built-in support for [ActiveRecord](http://ar.rubyonrails.org/) and [DataMapper](http://datamapper.org/) models.
+Using rhoconnect-rb, your application's model data will transparently synchronize with a mobile application built using the [Rhodes framework](http://rhomobile.com/products/rhodes), or any of the available [Rhoconnect clients](http://rhomobile.com/products/rhosync/).  This client includes built-in support for [ActiveRecord](http://ar.rubyonrails.org/) and [DataMapper](http://datamapper.org/) models.
 
 ## Getting started
 
@@ -42,7 +42,7 @@ For example, the `Product` model above might have a `belongs_to :user` relations
 	  partition lambda { self.user.username }
 	end
 	
-For more information about Rhoconnect partitions, please refer to the [Rhoconnect docs](http://docs.rhomobile.com/Rhoconnect/source-adapters#data-partitioning).
+For more information about Rhoconnect partitions, please refer to the [Rhoconnect docs](http://docs.rhomobile.com/rhosync/source-adapters#data-partitioning).
 
 ## Meta
 Created and maintained by Vladimir Tarasov and Lars Burgess.
