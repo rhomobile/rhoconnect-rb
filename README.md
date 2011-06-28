@@ -50,7 +50,7 @@ Now all of the `Product` data synchronized by rhoconnect will organized by `self
 	
 For more information about Rhoconnect partitions, please refer to the [Rhoconnect docs](http://docs.rhomobile.com/rhosync/source-adapters#data-partitioning).
 
-### Querying Dataset
+### Querying Datasets
 
 `rhoconnect-rb` installs a `/rhoconnect/query` route in your application which the Rhoconnect instance invokes to query the dataset for the dataset you want to synchronize.  This route is mapped to a `rhoconnect_query` method in your model.  This method should return a collection of objects:
 
@@ -68,7 +68,36 @@ For more information about Rhoconnect partitions, please refer to the [Rhoconnec
 
 In this example, `self.rhoconnect_query` returns a list of products where the partition string (provided by the rhoconnect instance) matches the `user_id` field in the products table.  
 
+### Configuration and Authentication
+
+Configure Rhoconnect in an initializer like `config/initializers/rhoconnect.rb` (for Rails), or directly in your application (i.e. Sinatra):
+
+	# Setup the Rhoconnect uri and api token.
+	# Use rhoconnect:get_token to get the token value.
+	
+	config.uri   = "http://myrhoconnect.com"
+	config.token = "secrettoken"
+
+Example: 
+
+   	Rhoconnect.configure do |config|
+      config.uri   = "http://myrhoconnect-server.com"
+      config.token = "secrettoken"
+	end
+	
+Example with authentication:
+
+Rhoconnect installs a `/rhoconnect/authenticate` route into your application which will receive credentials from the client.  Add block which handles the credentials:
+
+	Rhoconnect.configure do |config|
+      config.uri   = "http://myrhoconnect-server.com"
+      config.token = "secrettoken"
+	  config.authenticate = lambda { |credentials| 
+        User.authenticate(credentials[:login], credentials[:password]) 
+	  }
+	end
+
 ## Meta
-Created and maintained by Vladimir Tarasov and Lars Burgess.
+Created and maintained by Lucas Campbell-Rossen, Vladimir Tarasov and Lars Burgess.
 
 Released under the [MIT License](http://www.opensource.org/licenses/mit-license.php).
