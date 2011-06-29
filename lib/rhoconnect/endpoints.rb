@@ -6,8 +6,8 @@ module Rhoconnect
       code, params = 200, parse_params(content_type, body)
       if Rhoconnect.configuration.authenticate
         code = 401 unless Rhoconnect.configuration.authenticate.call(params)
-      end  
-      [code, {'Content-Type' => 'text/plain'}, [""]]
+      end
+      [code, {'Content-Type' => 'text/plain'}, [code == 200 ? params['login'] : ""]]
     end
     
     def self.query(content_type, body)

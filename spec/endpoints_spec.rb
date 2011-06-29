@@ -47,7 +47,7 @@ describe Rhoconnect::EndpointHelpers do
     it "should call configured authenticate block" do
       setup_auth_test(true)
       Rhoconnect::Authenticate.call(@env).should == [
-        200, {'Content-Type' => 'text/plain'}, [""]
+        200, {'Content-Type' => 'text/plain'}, [nil]
       ]
     end
     
@@ -65,13 +65,13 @@ describe Rhoconnect::EndpointHelpers do
       end
       Rhoconnect.configuration.authenticate.should be_nil
       Rhoconnect::Authenticate.call(@env).should == [
-        200, {'Content-Type' => 'text/plain'}, [""]
+        200, {'Content-Type' => 'text/plain'}, [nil]
       ]
     end
     
     it "should call authenticate block with empty params" do
       Rhoconnect::EndpointHelpers.authenticate('text/plain', '').should == [
-        200, {"Content-Type"=>"text/plain"}, [""]
+        200, {"Content-Type"=>"text/plain"}, [nil]
       ]
     end
   end
@@ -218,7 +218,7 @@ describe Rhoconnect::EndpointHelpers do
       app.should_receive(:content_type).with('text/plain')
       app.call_helper(
         :authenticate, 'application/json', @creds.to_json
-      ).should == ""
+      ).should == nil
     end
     
     it "should call helper for query" do
