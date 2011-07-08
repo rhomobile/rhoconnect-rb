@@ -7,20 +7,24 @@ describe Rhoconnect::Resource do
       class TestModel1 < ActiveRecord::Base
         include Rhoconnect::Resource
       
-        partition :app
+        def partition 
+          :app
+        end
       end
     
-      TestModel1.get_partition.should == :app
+      TestModel1.new.get_partition.should == :app
     end
   
     it "should set resource partition with lambda" do
       class TestModel2 < ActiveRecord::Base
         include Rhoconnect::Resource
       
-        partition lambda{ 'helloworld' }
+        def partition 
+          lambda{ 'helloworld' }
+        end
       end
     
-      TestModel2.get_partition.should == 'helloworld'
+      TestModel2.new.get_partition.should == 'helloworld'
     end
   end
   
@@ -70,7 +74,9 @@ describe Rhoconnect::Resource do
     it "should call create update delete hook" do
       class TestModel7 < ActiveRecord::Base
         include Rhoconnect::Resource
-        partition :app
+        def partition 
+          :app
+        end
       end
       client = mock('Rhoconnect::Client')
       client.stub!(:send)
@@ -86,7 +92,9 @@ describe Rhoconnect::Resource do
     it "should warn on RestClient::Exception" do
       class TestModel8 < ActiveRecord::Base
         include Rhoconnect::Resource
-        partition :app
+        def partition 
+          :app
+        end
       end
       client = mock('Rhoconnect::Client')
       exception = RestClient::Exception.new(
@@ -105,7 +113,9 @@ describe Rhoconnect::Resource do
     it "should warn on Exception" do
       class TestModel8 < ActiveRecord::Base
         include Rhoconnect::Resource
-        partition :app
+        def partition 
+          :app
+        end
       end
       client = mock('Rhoconnect::Client')
       client.stub!(:send).and_return { raise Exception.new("error connecting to server") }

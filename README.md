@@ -41,7 +41,9 @@ For example, the `Product` model above might have a `belongs_to :user` relations
 	  
 	  belongs_to :user
 	
-	  partition lambda { self.user.username }
+	  def partition 
+		lambda { self.user.username }
+	  end
 	end
 	
 Now all of the `Product` data synchronized by rhoconnect will organized by `self.user.username`.  Note: You can also used a fixed key if the dataset doesn't require a dynamic value:
@@ -59,7 +61,9 @@ For more information about Rhoconnect partitions, please refer to the [Rhoconnec
 	  
 	  belongs_to :user
 	
-	  partition lambda { self.user.username }
+	  def partition 
+		lambda { self.user.username }
+	  end
 	
 	  def self.rhoconnect_query(partition)
 	    Product.where(:user_id => partition)

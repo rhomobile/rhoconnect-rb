@@ -11,14 +11,6 @@ module Rhoconnect
     
     
     module ClassMethods
-      def partition(p)
-        @partition = p
-      end
-      
-      def get_partition
-        @partition.is_a?(Proc) ? @partition.call : @partition
-      end
-      
       def rhoconnect_receive_create(partition, attributes)
         instance = self.send(:new)
         instance.send(:rhoconnect_apply_attributes, partition, attributes)
@@ -47,6 +39,11 @@ module Rhoconnect
     
     module InstanceMethods
       attr_accessor :skip_rhoconnect_callbacks
+
+      def get_partition
+        @partition = partition
+        @partition.is_a?(Proc) ? @partition.call : @partition
+      end
       
       def rhoconnect_create
         call_client_method(:create)
@@ -76,7 +73,7 @@ module Rhoconnect
         attribs.each do |key,value|
           attribs[key] = Time.parse(value.to_s).to_i.to_s if value.is_a?(Time) or value.is_a?(DateTime)
         end if Rhoconnect.configuration.sync_time_as_int
-        attribs    
+        attribs
       end
       
       private
@@ -85,7 +82,7 @@ module Rhoconnect
         unless self.skip_rhoconnect_callbacks
           attribs = self.normalized_attributes
           begin
-            Rhoconnect::Client.new.send(action, self.class.to_s, self.class.get_partition, attribs)
+            Rhoconnect::Client.new.send(action, self.class.to_s, self.get_partition, attribs)
           rescue RestClient::Exception => re
             warn "#{self.class.to_s}: rhoconnect_#{action} returned error: #{re.message} - #{re.http_body}"
           rescue Exception => e
