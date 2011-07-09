@@ -31,7 +31,7 @@ Or, if you are using DataMapper:
 	
 Next, your models will need to declare a partition key for `rhoconnect-rb`.  This partition key is used by `rhoconnect-rb` to uniquely identify the model dataset when it is stored in a rhoconnect instance.  It is typically an attribute on the model or related model.  `rhoconnect-rb` supports two types of partitions:
 
-* :app - No unique key will be used, a shared dataset is synchronzied for all users.
+* :app - No unique key will be used, a shared dataset is synchronized for all users.
 * lambda { some lambda } - Execute a lambda which returns the unique key string.
 
 For example, the `Product` model above might have a `belongs_to :user` relationship.  This provides us a simple way to organize the `Product` dataset for rhoconnect by reusing this relationship.  The partition identifying a username would be declared as:
@@ -48,7 +48,9 @@ For example, the `Product` model above might have a `belongs_to :user` relations
 	
 Now all of the `Product` data synchronized by rhoconnect will organized by `self.user.username`.  Note: You can also used a fixed key if the dataset doesn't require a dynamic value:
 
-	partition lambda { :app }
+	def partition
+	  :app
+	end
 	
 For more information about Rhoconnect partitions, please refer to the [Rhoconnect docs](http://docs.rhomobile.com/rhosync/source-adapters#data-partitioning).
 
