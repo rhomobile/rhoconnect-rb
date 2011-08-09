@@ -76,16 +76,18 @@ In this example, `self.rhoconnect_query` returns a list of products where the pa
 
 ### Configuration and Authentication
 
-Configure Rhoconnect in an initializer like `config/initializers/rhoconnect.rb` (for Rails), or directly in your application (i.e. Sinatra).  Here you will setup the rhoconnect uri, api token, and app\_endpoint
+Configure Rhoconnect in an initializer like `config/initializers/rhoconnect.rb` (for Rails), or directly in your application (i.e. Sinatra).  Here you will setup the rhoconnect uri (the location of your rhoconnect instance), and app\_endpoint (the location of your ruby app):
 
 
 	# Use rhoconnect:get_token to get the token value.
 	
 	config.uri   = "http://myrhoconnect.com"
 	config.token = "secrettoken"
-	config.app_endpoint = "http://myapp.com"
+	config.app_endpoint = "http://myapp.heroku.com"
 	
-`app_endpoint` defines the location of your ruby app.  If `app_endpoint` is defined, your rhoconnect instance will be configured to query data using the rhoconnect_query method in your model.
+If `app_endpoint` is defined, your Rhoconnect instance will be configured to query data from the endpoint using the rhoconnect_query method in your model.  For example, if your `app_endpoint` is defined as "http://myapp.heroku.com", Rhoconnect will query data with:
+
+	POST http://myapp.heroku.com/rhoconnect/query
 
 Example: 
 
