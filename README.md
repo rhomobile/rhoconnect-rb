@@ -76,24 +76,28 @@ In this example, `self.rhoconnect_query` returns a list of products where the pa
 
 ### Configuration and Authentication
 
-Configure Rhoconnect in an initializer like `config/initializers/rhoconnect.rb` (for Rails), or directly in your application (i.e. Sinatra):
+Configure Rhoconnect in an initializer like `config/initializers/rhoconnect.rb` (for Rails), or directly in your application (i.e. Sinatra).  Here you will setup the rhoconnect uri, api token, and app\_endpoint
 
-	# Setup the Rhoconnect uri and api token.
+
 	# Use rhoconnect:get_token to get the token value.
 	
 	config.uri   = "http://myrhoconnect.com"
 	config.token = "secrettoken"
+	config.app_endpoint = "http://myapp.com"
+	
+`app_endpoint` defines the location of your ruby app.  If `app_endpoint` is defined, your rhoconnect instance will be configured to query data using the rhoconnect_query method in your model.
 
 Example: 
 
    	Rhoconnect.configure do |config|
-      config.uri   = "http://myrhoconnect-server.com"
-      config.token = "secrettoken"
+      config.uri   		  = "http://myrhoconnect-server.com"
+      config.token 		  = "secrettoken"
+	  config.app_endpoint = "http://myapp.heroku.com"
 	end
 	
 Example with authentication:
 
-Rhoconnect installs a `/rhoconnect/authenticate` route into your application which will receive credentials from the client.  Add block which handles the credentials:
+`rhoconnect-rb` installs a `/rhoconnect/authenticate` route into your application which will receive credentials from the client.  Add block which handles the credentials:
 
 	Rhoconnect.configure do |config|
       config.uri   = "http://myrhoconnect-server.com"
@@ -102,6 +106,7 @@ Rhoconnect installs a `/rhoconnect/authenticate` route into your application whi
         User.authenticate(credentials[:login], credentials[:password]) 
 	  }
 	end
+	
 
 ## Meta
 Created and maintained by Lucas Campbell-Rossen, Vladimir Tarasov and Lars Burgess.
