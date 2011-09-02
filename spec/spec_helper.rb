@@ -23,6 +23,9 @@ module Sinatra
   end
 end
 
+# stub so railties will not try and load during tests
+NO_RAILITIES = true
+
 require 'rhoconnect-rb'
 
 
