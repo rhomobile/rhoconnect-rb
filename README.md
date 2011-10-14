@@ -68,7 +68,7 @@ For more information about Rhoconnect partitions, please refer to the [Rhoconnec
 	  end
 	
 	  def self.rhoconnect_query(partition)
-	    Product.where(:user_id => partition)
+	    Product.includes(:user).where("users.username = ?",partition)
 	  end
 	end
 
