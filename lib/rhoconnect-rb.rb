@@ -5,4 +5,4 @@ require 'rhoconnect/configuration'
 require 'rhoconnect/client'
 require 'rhoconnect/resource'
 require 'rhoconnect/endpoints'
-require 'rhoconnect/railtie' if defined?(Rails) && !NO_RAILITIES
+require 'rhoconnect/railtie' if defined?(Rails)

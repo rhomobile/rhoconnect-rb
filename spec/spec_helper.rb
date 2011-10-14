@@ -14,6 +14,12 @@ module Rails
   class Engine; end
 end
 
+module Rails
+  class Railtie
+    def self.rake_tasks; end
+  end
+end
+
 # stubs for sinatra
 module Sinatra
   def self.register(mod); end
@@ -22,9 +28,6 @@ module Sinatra
     def self.status(code); end
   end
 end
-
-# stub so railties will not try and load during tests
-NO_RAILITIES = true
 
 require 'rhoconnect-rb'
 
