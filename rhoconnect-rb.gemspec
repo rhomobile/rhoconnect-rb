@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = nil  
   s.add_dependency('rest-client', '~>1.6.1')
-  s.add_dependency('json', '~>1.4.6')
+  s.add_dependency('json', '~>1.5.4')
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
