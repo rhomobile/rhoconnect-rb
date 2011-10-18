@@ -1,9 +1,9 @@
 rhoconnect-rb
 ===
 
-A ruby library for the [Rhoconnect](http://rhomobile.com/products/rhoconnect) App Integration Server.
+A ruby library for the [RhoConnect](http://rhomobile.com/products/rhoconnect) App Integration Server.
 
-Using rhoconnect-rb, your application's model data will transparently synchronize with a mobile application built on the [Rhodes framework](http://rhomobile.com/products/rhodes), or any of the available [Rhoconnect clients](http://rhomobile.com/products/rhoconnect/).  This client includes built-in support for [ActiveRecord](http://ar.rubyonrails.org/) and [DataMapper](http://datamapper.org/) models.
+Using rhoconnect-rb, your application's model data will transparently synchronize with a mobile application built on the [Rhodes framework](http://rhomobile.com/products/rhodes), or any of the available [RhoConnect clients](http://rhomobile.com/products/rhoconnect/).  This client includes built-in support for [ActiveRecord](http://ar.rubyonrails.org/) and [DataMapper](http://datamapper.org/) models.
 
 ## Getting started
 
