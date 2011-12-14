@@ -1,4 +1,4 @@
-rhoconnect-rb
+rhoconnect-rb [![Build Status](https://secure.travis-ci.org/rhomobile/rhoconnect-rb.png)][Continuous Integration]
 ===
 
 A ruby library for the [RhoConnect](http://rhomobile.com/products/rhoconnect) App Integration Server.
@@ -117,7 +117,7 @@ If you're using the [RhoConnect Heroku Addon](http://docs.rhomobile.com/rhoconne
 	    User.authenticate(credentials[:login], credentials[:password]) 
 	  }
 	end
-	
+		
 
 ## Meta
 Created and maintained by Lucas Campbell-Rossen, Vladimir Tarasov and Lars Burgess.

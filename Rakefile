@@ -14,8 +14,8 @@ end
 desc "Run all specs with rcov"
 RSpec::Core::RakeTask.new(:rcov) do |t|
   t.rcov = true
-  t.rspec_opts = ["-b", "-c", "-fd"]
   t.rcov_opts =  ['--exclude', 'spec/*,gems/*']
+  t.rspec_opts = ["-b", "-c", "-fd"]
 end
 
 task :default => :spec
