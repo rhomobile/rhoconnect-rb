@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Rhoconnect-rb by rhomobile</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Rhoconnect-rb</h1>
+        <p>A ruby client library for the RhoConnect App Integration Server</p>
+        <p class="view"><a href="https://github.com/rhomobile/rhoconnect-rb">View the Project on GitHub <small>rhomobile/rhoconnect-rb</small></a></p>
+        <ul>
+          <li><a href="https://github.com/rhomobile/rhoconnect-rb/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/rhomobile/rhoconnect-rb/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/rhomobile/rhoconnect-rb">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>rhoconnect-rb <img src="https://secure.travis-ci.org/rhomobile/rhoconnect-rb.png" alt="Build Status">
+</h1>
+
+<p>A ruby library for the <a href="http://rhomobile.com/products/rhoconnect">RhoConnect</a> App Integration Server.</p>
+
+<p>Using rhoconnect-rb, your application's model data will transparently synchronize with a mobile application built on the <a href="http://rhomobile.com/products/rhodes">Rhodes framework</a>, or any of the available <a href="http://rhomobile.com/products/rhoconnect/">RhoConnect clients</a>.  This client includes built-in support for <a href="http://ar.rubyonrails.org/">ActiveRecord</a> and <a href="http://datamapper.org/">DataMapper</a> models.</p>
+
+<h2>Getting started</h2>
+
+<p>Load the <code>rhoconnect-rb</code> library:</p>
+
+<pre><code>require 'rhoconnect-rb'
+</code></pre>
+
+<p>Note, if you are using datamapper, install the <code>dm-serializer</code> library and require it in your application.  <code>rhoconnect-rb</code> depends on this utility to interact with Rhoconnect applications using JSON.</p>
+
+<h2>Setup the Model</h2>
+
+<p>Now include Rhoconnect::Resource in a model that you want to synchronize with your mobile application:</p>
+
+<pre><code>class Product &lt; ActiveRecord::Base
+  include Rhoconnect::Resource
+end
+</code></pre>
+
+<p>Or, if you are using DataMapper:</p>
+
+<pre><code>class Product
+  include DataMapper::Resource
+  include Rhoconnect::Resource
+end
+</code></pre>
+
+<h2>Partitioning Datasets</h2>
+
+<p>Next, your models will need to declare a partition key for <code>rhoconnect-rb</code>.  This partition key is used by <code>rhoconnect-rb</code> to uniquely identify the model dataset when it is stored in a rhoconnect instance.  It is typically an attribute on the model or related model.  <code>rhoconnect-rb</code> supports two types of partitions:</p>
+
+<ul>
+<li>:app - No unique key will be used, a shared dataset is synchronized for all users.</li>
+<li>lambda { some lambda } - Execute a lambda which returns the unique key string.</li>
+</ul><p>For example, the <code>Product</code> model above might have a <code>belongs_to :user</code> relationship.  This provides us a simple way to organize the <code>Product</code> dataset for rhoconnect by reusing this relationship.  The partition identifying a username would be declared as:</p>
+
+<pre><code>class Product &lt; ActiveRecord::Base
+  include Rhoconnect::Resource
+
+  belongs_to :user
+
+  def partition 
+    lambda { self.user.username }
+  end
+end
+</code></pre>
+
+<p>Now all of the <code>Product</code> data synchronized by rhoconnect will organized by <code>self.user.username</code>.  Note: You can also used a fixed key if the dataset doesn't require a dynamic value:</p>
+
+<pre><code>def partition
+  :app
+end
+</code></pre>
+
+<p>For more information about Rhoconnect partitions, please refer to the <a href="http://docs.rhomobile.com/rhoconnect/source-adapters#data-partitioning">Rhoconnect docs</a>.</p>
+
+<h2>Querying Datasets</h2>
+
+<p><code>rhoconnect-rb</code> installs a <code>/rhoconnect/query</code> route in your application which the Rhoconnect instance invokes to query the dataset for the dataset you want to synchronize.  This route is mapped to a <code>rhoconnect_query</code> method in your model.  This method should return a collection of objects:</p>
+
+<pre><code>class Product &lt; ActiveRecord::Base
+  include Rhoconnect::Resource
+
+  belongs_to :user
+
+  def partition 
+    lambda { self.user.username }
+  end
+
+  def self.rhoconnect_query(partition)
+    Product.includes(:user).where("users.username = ?",partition)
+  end
+end
+</code></pre>
+
+<p>In this example, <code>self.rhoconnect_query</code> returns a list of products where the partition string (provided by the rhoconnect instance) matches the <code>user_id</code> field in the products table.  </p>
+
+<h2>Configuration and Authentication</h2>
+
+<h3>Running RhoConnect Manually</h3>
+
+<p>Configure RhoConnect in an initializer like <code>config/initializers/rhoconnect.rb</code> (for Rails), or directly in your application (i.e. Sinatra).  Here you will setup the rhoconnect uri (the location of your RhoConnect instance), the api_token (see <a href="http://docs.rhomobile.com/rhoconnect/command-line#rake-tasks">rhoconnect:get_token</a> rake task), and app_endpoint (the location of your ruby app):</p>
+
+<pre><code>config.uri   = "<a href="http://myrhoconnect.com">http://myrhoconnect.com</a>"
+config.token = "secrettoken"
+config.app_endpoint = "<a href="http://myapp.heroku.com">http://myapp.heroku.com</a>"
+</code></pre>
+
+<p>If <code>app_endpoint</code> is defined, your Rhoconnect instance will be configured to query data from the endpoint using the rhoconnect_query method in your model.  For example, if your <code>app_endpoint</code> is defined as "<a href="http://myapp.heroku.com">http://myapp.heroku.com</a>", RhoConnect will query data with:</p>
+
+<pre><code>POST <a href="http://myapp.heroku.com/rhoconnect/query">http://myapp.heroku.com/rhoconnect/query</a>
+</code></pre>
+
+<p>Example: </p>
+
+<pre><code>Rhoconnect.configure do |config|
+  config.uri          = "<a href="http://myrhoconnect-server.com">http://myrhoconnect-server.com</a>"
+  config.token        = "secrettoken"
+  config.app_endpoint = "<a href="http://myapp.heroku.com">http://myapp.heroku.com</a>"
+end
+</code></pre>
+
+<p>Example with authentication:</p>
+
+<p><code>rhoconnect-rb</code> installs a <code>/rhoconnect/authenticate</code> route into your application which will receive credentials from the client.  Add block which handles the credentials:</p>
+
+<pre><code>Rhoconnect.configure do |config|
+  config.uri   = "<a href="http://myrhoconnect-server.com">http://myrhoconnect-server.com</a>"
+  config.token = "secrettoken"
+  config.authenticate = lambda { |credentials| 
+    User.authenticate(credentials[:login], credentials[:password]) 
+  }
+end
+</code></pre>
+
+<h3>Using the <a href="http://docs.rhomobile.com/rhoconnect/heroku-addon">RhoConnect Heroku Addon</a>
+</h3>
+
+<p>If you're using the <a href="http://docs.rhomobile.com/rhoconnect/heroku-addon">RhoConnect Heroku Addon</a>, then you can omit the config.uri and config.token (they are managed for you):</p>
+
+<pre><code>Rhoconnect.configure do |config|
+  config.authenticate = lambda { |credentials| 
+    User.authenticate(credentials[:login], credentials[:password]) 
+  }
+end
+</code></pre>
+
+<h2>Meta</h2>
+
+<p>Created and maintained by Lucas Campbell-Rossen, Vladimir Tarasov and Lars Burgess.</p>
+
+<p>Released under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT License</a>.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/rhomobile">rhomobile</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
