@@ -15,7 +15,7 @@ module Rhoconnect
       action, c_type, result, records = :rhoconnect_query, 'application/json', {}, []
       # Call resource rhoconnect_query class method
       code, error = get_rhoconnect_resource(params['resource'], action) do |klass|
-        records = klass.send(action, params['partition'])
+        records = klass.send(action, params['partition'], params['attributes'])
       end
       if code == 200
         # Serialize records into hash of hashes

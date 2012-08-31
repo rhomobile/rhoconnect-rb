@@ -57,7 +57,7 @@ module Rhoconnect
         call_client_method(:update)
       end
       
-      def rhoconnect_query(partition)
+      def rhoconnect_query(partition, attributes = {})
         #return all objects for this partition 
       end
       

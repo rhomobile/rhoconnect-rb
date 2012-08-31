@@ -61,9 +61,8 @@ module Rhoconnect
     def send_objects(action, source_name, partition, obj = {}) # :nodoc:
       validate_args(source_name, partition, obj)
       
-      process(:post, "/api/source/#{action}",
+      process(:post, "/app/v1/#{source_name}/#{action}",
         {
-          :source_id => source_name,
           :user_id => partition,
           :objects => action == :push_deletes ? [obj['id'].to_s] : { obj['id'] => obj }
         }
@@ -77,8 +76,8 @@ module Rhoconnect
     def process(method, path, payload = nil) # :nodoc:
       headers = api_headers
       unless method == :get
-        payload  = payload.merge!(:api_token => @token).to_json
-        headers = api_headers.merge(:content_type => 'application/json')
+        payload  = payload.to_json
+        headers = api_headers.merge(:content_type => 'application/json', 'X-RhoConnect-API-TOKEN' => @token)
       end
       args     = [method, payload, headers].compact
       response = resource(path).send(*args)

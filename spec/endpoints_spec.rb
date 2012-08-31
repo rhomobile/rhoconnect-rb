@@ -11,7 +11,7 @@ describe Rhoconnect::EndpointHelpers do
   # Query stub class
   class Product < ActiveRecord::Base
     include Rhoconnect::Resource
-    def self.rhoconnect_query(partition)
+    def self.rhoconnect_query(partition, attributes = {})
       [self.new]
     end
   end
