@@ -58,7 +58,7 @@ describe Rhoconnect::Client do
     end
     
     it "should create an object" do
-      stub_request(:post, "http://test.rhoconnect.com/api/source/push_objects").with(
+      stub_request(:post, "http://test.rhoconnect.com/app/v1/Person/push_objects").with(
         :headers => {"Content-Type" => "application/json"}
       ).to_return(:status => 200, :body => "done")
       resp = @client.create("Person", "user1", 
@@ -72,7 +72,7 @@ describe Rhoconnect::Client do
     end
     
     it "should update an object" do
-      stub_request(:post, "http://test.rhoconnect.com/api/source/push_objects").with(
+      stub_request(:post, "http://test.rhoconnect.com/app/v1/Person/push_objects").with(
         :headers => {"Content-Type" => "application/json"}
       ).to_return(:status => 200, :body => "done")
       resp = @client.update("Person", "user1", 
@@ -86,7 +86,7 @@ describe Rhoconnect::Client do
     end
     
     it "should destroy an object" do
-      stub_request(:post, "http://test.rhoconnect.com/api/source/push_deletes").with(
+      stub_request(:post, "http://test.rhoconnect.com/app/v1/Person/push_deletes").with(
         :headers => {"Content-Type" => "application/json"}
       ).to_return(:status => 200, :body => "done")
       resp = @client.destroy("Person", "user1", 

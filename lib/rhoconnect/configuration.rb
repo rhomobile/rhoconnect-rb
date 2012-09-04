@@ -42,9 +42,9 @@ module Rhoconnect
       uri      = uri.to_s
     end
     token ||= ENV['token'] || self.configuration.token
-    Rhoconnect::Client.set_app_endpoint(:url => uri + "/api/source/save_adapter", 
-      :payload => {:attributes => {:adapter_url => endpoint_url}, :api_token => token}.to_json,
-      :headers => {:content_type => 'application/json'}
+    Rhoconnect::Client.set_app_endpoint(:url => uri + "/rc/v1/system/appserver", 
+      :payload => {:adapter_url => endpoint_url}.to_json,
+      :headers => {:content_type => 'application/json', 'X-RhoConnect-API-TOKEN' => token}
     ) if endpoint_url && uri && token
   end
 end
