@@ -1,4 +1,4 @@
-module Rhoconnect
+module Rhoconnectrb
   module API
     class System
       

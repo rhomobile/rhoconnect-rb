@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require 'rhoconnect/version'
+require 'rhoconnectrb/version'
 
 Gem::Specification.new do |s|
   s.name        = "rhoconnect-rb"
-  s.version     = Rhoconnect::VERSION
+  s.version     = Rhoconnectrb::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Rhomobile"]
   s.date        = Time.now.strftime('%Y-%m-%d')

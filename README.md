@@ -14,17 +14,17 @@ Load the `rhoconnect-rb` library:
 Note, if you are using datamapper, install the `dm-serializer` library and require it in your application.  `rhoconnect-rb` depends on this utility to interact with Rhoconnect applications using JSON.
 	
 ## Setup the Model
-Now include Rhoconnect::Resource in a model that you want to synchronize with your mobile application:
+Now include Rhoconnectrb::Resource in a model that you want to synchronize with your mobile application:
 
 	class Product < ActiveRecord::Base
-	  include Rhoconnect::Resource
+	  include Rhoconnectrb::Resource
 	end
 	
 Or, if you are using DataMapper:
 
 	class Product
 	  include DataMapper::Resource
-	  include Rhoconnect::Resource
+	  include Rhoconnectrb::Resource
 	end
 
 ## Partitioning Datasets
@@ -37,7 +37,7 @@ Next, your models will need to declare a partition key for `rhoconnect-rb`.  Thi
 For example, the `Product` model above might have a `belongs_to :user` relationship.  This provides us a simple way to organize the `Product` dataset for rhoconnect by reusing this relationship.  The partition identifying a username would be declared as:
 
 	class Product < ActiveRecord::Base
-	  include Rhoconnect::Resource
+	  include Rhoconnectrb::Resource
 	  
 	  belongs_to :user
 	

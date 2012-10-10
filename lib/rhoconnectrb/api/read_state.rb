@@ -1,5 +1,5 @@
 #READSTATE is special class that does not have resource id so logic changes to account for nil id inherint to every request
-module Rhoconnect
+module Rhoconnectrb
   module API
     class ReadState
       

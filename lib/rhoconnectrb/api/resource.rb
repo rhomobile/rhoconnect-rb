@@ -1,4 +1,4 @@
-module Rhoconnect
+module Rhoconnectrb
   module API
     class Resource
       
@@ -17,9 +17,9 @@ module Rhoconnect
       end
       
       def self.token
-         url = Rhoconnect.configuration.uri || ENV['RHOCONNECT_URL']
+         url = Rhoconnectrb.configuration.uri || ENV['RHOCONNECT_URL']
          uri = URI.parse(url)
-         Rhoconnect.configuration.token || uri.user
+         Rhoconnectrb.configuration.token || uri.user
       end
 
       def self.content
@@ -27,7 +27,7 @@ module Rhoconnect
       end
 
       def self.resource
-         uri = Rhoconnect.configuration.uri || ENV['RHOCONNECT_URL']
+         uri = Rhoconnectrb.configuration.uri || ENV['RHOCONNECT_URL']
          RestClient::Resource.new(uri + "/app/v1")
       end
       

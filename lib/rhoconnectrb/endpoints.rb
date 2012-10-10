@@ -1,11 +1,11 @@
 require 'json'
 
-module Rhoconnect
+module Rhoconnectrb
   class EndpointHelpers
     def self.authenticate(content_type, body)
       code, params = 200, parse_params(content_type, body)
-      if Rhoconnect.configuration.authenticate
-        code = 401 unless Rhoconnect.configuration.authenticate.call(params)
+      if Rhoconnectrb.configuration.authenticate
+        code = 401 unless Rhoconnectrb.configuration.authenticate.call(params)
       end
       [code, {'Content-Type' => 'text/plain'}, [code == 200 ? params['login'] : ""]]
     end
@@ -66,7 +66,7 @@ module Rhoconnect
         error = "error on method `#{action}` for #{resource_name}: #{ne.message}"
         code = 404
       rescue NameError
-        error = "Missing Rhoconnect::Resource #{resource_name}"
+        error = "Missing Rhoconnectrb::Resource #{resource_name}"
         code = 404
       # TODO: catch HaltException and Exception here, built-in source adapter will handle them
       rescue Exception => e
@@ -92,11 +92,11 @@ if defined? Rails
     class Engine < Rails::Engine; end
   #end
   
-  module Rhoconnect
+  module Rhoconnectrb
     class BaseEndpoint
       def self.call(env)
         req = Rack::Request.new(env)
-        Rhoconnect::EndpointHelpers.send(self.to_s.downcase.split("::")[1].to_sym, req.content_type, req.body.read)
+        Rhoconnectrb::EndpointHelpers.send(self.to_s.downcase.split("::")[1].to_sym, req.content_type, req.body.read)
       end
     end
     
@@ -135,7 +135,7 @@ if defined? Sinatra
   # require 'rhoconnect-rb'
   # 
   # class Myapp < Sinatra::Base
-  #   register Sinatra::RhoconnectEndpoints
+  #   register Sinatra::RhoconnectrbEndpoints
   #   get '/' do
   #     'hello world'
   #   end
@@ -143,7 +143,7 @@ if defined? Sinatra
   module Sinatra
     module RhoconnectHelpers
       def call_helper(method,*args)
-        code, c_type, body = Rhoconnect::EndpointHelpers.send(method,*args)
+        code, c_type, body = Rhoconnectrb::EndpointHelpers.send(method,*args)
         content_type c_type['Content-Type']
         status code
         body[0]
