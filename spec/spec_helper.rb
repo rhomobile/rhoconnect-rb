@@ -1,8 +1,19 @@
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'rspec'
 require 'webmock/rspec'
-
+require 'active_resource/http_mock'
+ENV["RAILS_ENV"] = "test"
 include WebMock::API
+
+class String
+  def underscore
+    self.gsub(/::/, '/').
+    gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+    gsub(/([a-z\d])([A-Z])/,'\1_\2').
+    tr("-", "_").
+    downcase
+  end
+end
 
 # stub for rack
 module Rack
