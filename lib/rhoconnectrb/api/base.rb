@@ -6,22 +6,24 @@ module Rhoconnectrb
     
     class Base
       def self.post(url,data)
-        resp = resource[url].post data.to_json, self.content
+        resp = resource[url].post data.to_json
         resp.body
       end
       
-      def self.get(url,nothing=nil)
-        resp = resource[url].get self.content
+      def self.get(url,params=nil)
+        params = {:params=>params} if params
+        resp = resource[url].get(params)
+        #resp = resource[url].get self.content
         resp.body
       end
       
       def self.put(url,data)
-        resp = resource[url].put data.to_json, self.content
+        resp = resource[url].put data.to_json
         resp.body
       end
       
       def self.delete(url,nothing=nil)
-        resp = resource[url].delete self.content
+        resp = resource[url].delete
         resp.body
       end
       
@@ -37,7 +39,7 @@ module Rhoconnectrb
       
       def self.resource
         uri = Rhoconnectrb.configuration.uri || ENV['RHOCONNECT_URL']
-        RestClient::Resource.new(uri + "/rc/v1")
+        RestClient::Resource.new(uri + "/rc/v1",:headers=>self.content)
       end
       
     end

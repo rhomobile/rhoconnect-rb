@@ -132,45 +132,47 @@ Some of these values are not used for every API call such as resource_id and dat
 
 #### `POST /rc/v1/system/login`
 
-	:::ruby
+	
 	data = {:login=>'username',:password=>'password'}
 	Rhoconnectrb::API::System.post_login(data)
 	
 #### `GET /rc/v1/system/license`
 
-	:::ruby
+	
 	Rhoconnectrb::API::System.get_license
 	
 #### `POST /rc/v1/system/reset`
 
-	:::ruby
+	
 	Rhoconnectrb::API::System.post_reset({})
 	
 #### `GET /rc/v1/system/appserver`
 
-	:::ruby
+	
 	Rhoconnectrb::API::System.get_appserver
 	
 #### `POST /rc/v1/system/appserver`
 
-	:::ruby
+	
 	data = {:adapter_url=>'http://test.com'}
 	Rhoconnectrb::API::System.post_appserver(data)
 	
 #### `GET /rc/v1/system/stats`
 
-	:::ruby
+	
+	data ={:names=>"*sources*"}
+	Rhoconnectrb::API::System.get_stats(data)
 	
 ### Store Resource
 	
 #### `GET /rc/v1/store/:doc`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Store.get('docname')
 	
 #### `POST /rc/v1/store/:doc`
 
-	:::ruby
+	
 	data = {:data=>{:id=3},:append=>false}
 	Rhoconnectrb::API::Store.post('docname',data)
 	
@@ -178,48 +180,48 @@ Some of these values are not used for every API call such as resource_id and dat
 
 #### `POST /rc/v1/users`
 
-	:::ruby
+	
 	data = {:attributes=>{:login=>'login',:password=>'password'}}
 	Rhoconnectrb::API::Users.post(data)
 	
 #### `DELETE /rc/v1/users/:user_id`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Users.delete('user_id')
 	
 #### `PUT /rc/v1/users/:user_id`
 
-	:::ruby
+	
 	data = {:attributes=>{:a_user_specific_attribute => a_user_specific_attribute_value}}
 	Rhoconnectrb::API::Users.put('user_id',data)
 	
 #### `GET /rc/v1/users`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Users.get
 	
 #### `Get /rc/v1/users/:user_id`
-	:::ruby
+	
 	Rhoconnectrb::API::Users.get('user_id')
 	
 #### `Get /rc/v1/users/:user_id/clients`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Users.get_clients(['user_id','client_id'])
 	
 #### `DELETE /rc/v1/users/:user_id/clients/:client_id`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Users.delete_clients(['user_id','client_id'])
 	
 #### `GET /rc/v1/users/:user_id/sources/:source_id/docnames`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Users.get_sources_docnames(['user_id','source_id'])
 	
 #### `POST /rc/v1/users/ping`
 
-	:::ruby
+	
 	data = {
 	  :api_token => token,
 	  :user_id => [array_of_users],
@@ -232,12 +234,12 @@ Some of these values are not used for every API call such as resource_id and dat
 	
 #### `GET /rc/v1/users/:user_id/sources/:source_id/docs/:doc`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Users.get_sources_docs(['user_id','source_id','docname'])
 	
 #### `POST /rc/v1/users/:user_id/sources/:source_id/docs/:doc`
 
-	:::ruby
+	
 	data = {:data=>data,:append=>false}
 	Rhoconnectrb::API::Users.post_sources_docs(['user_id','source_id','docname'],data)
 	
@@ -245,7 +247,7 @@ Some of these values are not used for every API call such as resource_id and dat
 
 #### `POST /rc/v1/read_state/users/:user_id/sources/:source_id`
 
-	:::ruby
+	
 	data = {:refresh_time => 100}
 	Rhconnectrb::API::ReadState.post_users_sources(['user_id','source_id'])
 	
@@ -253,17 +255,17 @@ Some of these values are not used for every API call such as resource_id and dat
 
 #### `GET /rc/v1/sources/type/:partition_type`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Sources.get_type('parition_type')
 
 #### `GET /rc/v1/sources/:source_id`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Sources.get('source_id')	
 	
 #### `PUT /rc/v1/sources/:source_id`
 
-	:::ruby
+	
 	data = {:user_name=>'username',:data=>{:poll_interval=>25}}
 	Rhoconnectrb::API::Sources.put('source_id',data)
 	
@@ -271,17 +273,17 @@ Some of these values are not used for every API call such as resource_id and dat
 
 #### `GET /rc/v1/clients/:client_id`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Clients.get('client_id')
 	
 #### `GET /rc/v1/clients/:client_id/sources/:source_id/docnames`
 
-	:::ruby
+	
 	Rhoconnectrb::API::Clients.get_sources_docnames(['client_id','source_id'])
 	
 #### `POST /rc/v1/clients/:client_id/sources/:source_id/docnames`
 
-	:::ruby
+	
 	data = {:data=>data,:append=>false}
 	Rhoconnectrb::API::Clients.post_sources_docnames(['client_id','source_id'],data)
 
@@ -291,31 +293,31 @@ The Resource class is used for API calls to user defined dynamic or source adapt
 
 #### `POST /app/v1/:source_name/push_objects`
 
-	:::ruby
+	
 	data = {:user_id=>'user_id',:objects=>data}
 	Rhoconnectrb::API::Resource.post_push_objects('source_name',data)
 	
 #### `POST /app/v1/:source_name/push_deletes`
 
-	:::ruby
+	
 	data = {:user_id => 'user_id',:objects=>'object_ids'}
 	Rhoconnectrb::API::Resource.post_push_deletes('source_name',data)
 	
 #### `POST /app/v1/:source_name/fast_insert`
 
-	:::ruby
+	
 	data = {:user_id=>'user_id',:objects=>data}
 	Rhoconnectrb::API::Resource.post_fast_insert('source_name',data)
 	
 #### `POST /app/v1/:source_name/fast_update`
 
-	:::ruby
+	
 	data = {:user_id=>'user_id',:objects=>data}
 	Rhoconnectrb::API::Resource.post_fast_update('source_name',data)
 	
 #### `POST /app/v1/:source_name/fast_delete`
 
-	:::ruby
+	
 	data = {:user_id=>'user_id',:objects=>data}
 	Rhoconnectrb::API::Resource.post_fast_delete('source_name',data)
 
