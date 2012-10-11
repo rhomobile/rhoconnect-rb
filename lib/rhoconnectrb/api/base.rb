@@ -11,9 +11,12 @@ module Rhoconnectrb
       end
       
       def self.get(url,params=nil)
-        params = {:params=>params} if params
-        resp = resource[url].get(params)
-        #resp = resource[url].get self.content
+        if params
+          params = {:params=>params} 
+          resp = resource[url].get(params)
+        else
+          resp = resource[url].get self.content
+        end
         resp.body
       end
       
