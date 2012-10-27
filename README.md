@@ -1,4 +1,4 @@
-rhoconnect-rb ![Build Status](https://secure.travis-ci.org/rhomobile/rhoconnect-rb.png)
+rhoconnect-rb [![Build Status](https://secure.travis-ci.org/rhomobile/rhoconnect-rb.png)](http://travis-ci.org/rhomobile/rhoconnect-rb)
 ===
 
 A ruby library for the [RhoConnect](http://rhomobile.com/products/rhoconnect) App Integration Server.
