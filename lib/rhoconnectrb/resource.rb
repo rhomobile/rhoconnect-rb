@@ -1,4 +1,4 @@
-module Rhoconnect
+module Rhoconnectrb
   module Resource
     
     def self.included(model)
@@ -72,7 +72,7 @@ module Rhoconnect
         attribs = self.attributes.dup
         attribs.each do |key,value|
           attribs[key] = Time.parse(value.to_s).to_i.to_s if value.is_a?(Time) or value.is_a?(DateTime)
-        end if Rhoconnect.configuration.sync_time_as_int
+        end if Rhoconnectrb.configuration.sync_time_as_int
         attribs
       end
       
@@ -82,7 +82,7 @@ module Rhoconnect
         unless self.skip_rhoconnect_callbacks
           attribs = self.normalized_attributes
           begin
-            Rhoconnect::Client.new.send(action, self.class.to_s, self.get_partition, attribs)
+            Rhoconnectrb::Client.new.send(action, self.class.to_s, self.get_partition, attribs)
           rescue RestClient::Exception => re
             warn "#{self.class.to_s}: rhoconnect_#{action} returned error: #{re.message} - #{re.http_body}"
           rescue Exception => e
@@ -108,7 +108,7 @@ module Rhoconnect
         if is_datamapper?
           # test for dm-serializer
           if not is_defined?(DataMapper::Serialize)
-            raise "Rhoconnect::Resource requires dm-serializer to work with DataMapper. Install with `gem install dm-serializer` and add to your application."
+            raise "Rhoconnectrb::Resource requires dm-serializer to work with DataMapper. Install with `gem install dm-serializer` and add to your application."
           end
           after :create, :rhoconnect_create
           after :destroy, :rhoconnect_destroy
@@ -118,7 +118,7 @@ module Rhoconnect
           after_destroy :rhoconnect_destroy
           after_update :rhoconnect_update
         else
-          raise "Rhoconnect::Resource only supports ActiveRecord or DataMapper at this time."
+          raise "Rhoconnectrb::Resource only supports ActiveRecord or DataMapper at this time."
         end
       end
       

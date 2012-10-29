@@ -1,4 +1,4 @@
-Rhoconnect.configure do |config|
+Rhoconnectrb.configure do |config|
   # Rhconnect.configure is used to set the url and token to your rhoconnect instance.
   # If you are connecting to a rhconnect instance provisioned from Heroku the uri and token are already defined.  Just leave commented out.
   

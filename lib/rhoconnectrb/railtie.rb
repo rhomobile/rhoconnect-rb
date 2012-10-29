@@ -1,4 +1,4 @@
-module Rhoconnect
+module Rhoconnectrb
   class Railtie < Rails::Railtie
     
     rake_tasks do

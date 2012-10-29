@@ -1,16 +1,16 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-describe Rhoconnect::EndpointHelpers do
+describe Rhoconnectrb::EndpointHelpers do
   
   # Auth stub class
   class AuthTest; end
   class BrokenResource < ActiveRecord::Base
-    include Rhoconnect::Resource
+    include Rhoconnectrb::Resource
   end
   
   # Query stub class
   class Product < ActiveRecord::Base
-    include Rhoconnect::Resource
+    include Rhoconnectrb::Resource
     def self.rhoconnect_query(partition, attributes = nil)
       [self.new]
     end
@@ -20,7 +20,7 @@ describe Rhoconnect::EndpointHelpers do
     AuthTest.stub!(:do_auth).and_return(success)
     AuthTest.should_receive(:do_auth).with(@creds)
     
-    Rhoconnect.configure do |config|
+    Rhoconnectrb.configure do |config|
       config.uri = "http://test.rhoconnect.com"
       config.token = "token"
       config.authenticate = lambda {|credentials|
@@ -46,31 +46,31 @@ describe Rhoconnect::EndpointHelpers do
     
     it "should call configured authenticate block" do
       setup_auth_test(true)
-      Rhoconnect::Authenticate.call(@env).should == [
+      Rhoconnectrb::Authenticate.call(@env).should == [
         200, {'Content-Type' => 'text/plain'}, [nil]
       ]
     end
     
     it "should call configured authenticate block with 401" do
       setup_auth_test(false)
-      Rhoconnect::Authenticate.call(@env).should == [
+      Rhoconnectrb::Authenticate.call(@env).should == [
         401, {'Content-Type' => 'text/plain'}, [""]
       ]
     end
     
     it "should return true if no authenticate block exists" do
-      Rhoconnect.configure do |config|
+      Rhoconnectrb.configure do |config|
         config.uri = "http://test.rhoconnect.com"
         config.token = "token" 
       end
-      Rhoconnect.configuration.authenticate.should be_nil
-      Rhoconnect::Authenticate.call(@env).should == [
+      Rhoconnectrb.configuration.authenticate.should be_nil
+      Rhoconnectrb::Authenticate.call(@env).should == [
         200, {'Content-Type' => 'text/plain'}, [nil]
       ]
     end
     
     it "should call authenticate block with empty params" do
-      Rhoconnect::EndpointHelpers.authenticate('text/plain', '').should == [
+      Rhoconnectrb::EndpointHelpers.authenticate('text/plain', '').should == [
         200, {"Content-Type"=>"text/plain"}, [nil]
       ]
     end
@@ -89,22 +89,22 @@ describe Rhoconnect::EndpointHelpers do
       )
       @env.stub!(:body).and_return(@strio)
       Rack::Request.stub!(:new).and_return(@env)
-      code, content_type, body = Rhoconnect::Query.call(@env)
+      code, content_type, body = Rhoconnectrb::Query.call(@env)
       code.should == 200
       content_type.should == { "Content-Type" => "application/json" }
       JSON.parse(body[0]).should == { '1' => Product.new.normalized_attributes }
     end
     
-    it "should fail on missing Rhoconnect::Resource" do
+    it "should fail on missing Rhoconnectrb::Resource" do
       @strio.stub!(:read).and_return(
         {'partition' => 'testuser', 'resource' => 'Broken'}.to_json
       )
       @env.stub!(:body).and_return(@strio)
       Rack::Request.stub!(:new).and_return(@env)
-      code, content_type, body = Rhoconnect::Query.call(@env)
+      code, content_type, body = Rhoconnectrb::Query.call(@env)
       code.should == 404
       content_type.should == { "Content-Type" => "text/plain" }
-      body[0].should == "Missing Rhoconnect::Resource Broken"
+      body[0].should == "Missing Rhoconnectrb::Resource Broken"
     end
     
     it "should fail on undefined rhoconnect_query method" do
@@ -113,7 +113,7 @@ describe Rhoconnect::EndpointHelpers do
       )
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
-      code, content_type, body = Rhoconnect::Query.call(@env)
+      code, content_type, body = Rhoconnectrb::Query.call(@env)
       code.should == 404
       content_type.should == { "Content-Type" => "text/plain" }
       body[0].should == "error on method `rhoconnect_query` for BrokenResource: undefined method `rhoconnect_query' for BrokenResource:Class"
@@ -126,7 +126,7 @@ describe Rhoconnect::EndpointHelpers do
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
       Product.stub!(:rhoconnect_receive_create).and_return { raise "error in create" }
-      code, content_type, body = Rhoconnect::Create.call(@env)
+      code, content_type, body = Rhoconnectrb::Create.call(@env)
       code.should == 500
       content_type.should == { "Content-Type" => "text/plain" }
       body[0].should == "error in create"
@@ -144,7 +144,7 @@ describe Rhoconnect::EndpointHelpers do
       @strio.stub!(:read).and_return(params.to_json)
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
-      code, content_type, body = Rhoconnect::Create.call(@env)
+      code, content_type, body = Rhoconnectrb::Create.call(@env)
       code.should == 200
       content_type.should == { "Content-Type" => "text/plain" }
       body.should == ['1']
@@ -163,7 +163,7 @@ describe Rhoconnect::EndpointHelpers do
       @strio.stub!(:read).and_return(params.to_json)
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
-      code, content_type, body = Rhoconnect::Update.call(@env)
+      code, content_type, body = Rhoconnectrb::Update.call(@env)
       code.should == 200
       content_type.should == { "Content-Type" => "text/plain" }
       body.should == ["123"]
@@ -182,7 +182,7 @@ describe Rhoconnect::EndpointHelpers do
       @strio.stub!(:read).and_return(params.to_json)
       @env.stub!(:body).and_return(@strio)      
       Rack::Request.stub!(:new).and_return(@env)
-      code, content_type, body = Rhoconnect::Delete.call(@env)
+      code, content_type, body = Rhoconnectrb::Delete.call(@env)
       code.should == 200
       content_type.should == { "Content-Type" => "text/plain" }
       body.should == ["123"]
@@ -203,7 +203,7 @@ describe Rhoconnect::EndpointHelpers do
       req.stub!(:env).and_return('CONTENT_TYPE' => 'application/json')
       Sinatra::RhoconnectEndpoints.stub!(:request).and_return(req)
       Sinatra::RhoconnectEndpoints.stub!(:params).and_return(@params)
-      Rhoconnect::EndpointHelpers.stub!(:query)
+      Rhoconnectrb::EndpointHelpers.stub!(:query)
       app = mock("app")
       app.stub!(:post).and_yield
       app.should_receive(:post).exactly(5).times
