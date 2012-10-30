@@ -9,3 +9,7 @@ group :test do
   gem 'rcov', '~>0.9.8', :platforms => [:ruby_18]
   gem 'webmock'
 end
+
+platforms :jruby do
+  gem 'jruby-openssl'
+end
