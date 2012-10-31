@@ -42,7 +42,7 @@ For example, the `Product` model above might have a `belongs_to :user` relations
 	  belongs_to :user
 
 	  def partition
-		lambda { self.user.username }
+			lambda { self.user.username }
 	  end
 	end
 
@@ -64,7 +64,7 @@ For more information about Rhoconnect partitions, please refer to the [Rhoconnec
 	  belongs_to :user
 
 	  def partition
-		lambda { self.user.username }
+			lambda { self.user.username }
 	  end
 
 	  def self.rhoconnect_query(partition, attributes = nil)
@@ -90,10 +90,10 @@ If `app_endpoint` is defined, your Rhoconnect instance will be configured to que
 
 Example:
 
-   	Rhoconnectrb.configure do |config|
-      config.uri   		  = "http://myrhoconnect-server.com"
-      config.token 		  = "secrettoken"
-	  config.app_endpoint = "http://myapp.heroku.com"
+	Rhoconnectrb.configure do |config|
+		config.uri    = "http://localhost:8675"
+		config.token  = "mydevtoken"
+		config.app_endpoint = "http://localhost:3000"
 	end
 
 Example with authentication:
@@ -101,10 +101,11 @@ Example with authentication:
 `rhoconnect-rb` installs a `/rhoconnect/authenticate` route into your application which will receive credentials from the client.  Add block which handles the credentials:
 
 	Rhoconnectrb.configure do |config|
-      config.uri   = "http://myrhoconnect-server.com"
-      config.token = "secrettoken"
+		config.uri    = "http://localhost:8675"
+		config.token  = "mydevtoken"
+		config.app_endpoint = "http://localhost:3000"
 	  config.authenticate = lambda { |credentials|
-        User.authenticate(credentials[:login], credentials[:password])
+	  	User.authenticate(credentials[:login], credentials[:password])
 	  }
 	end
 
@@ -113,12 +114,13 @@ Example with authentication:
 If you're using the [RhoConnect Heroku Addon](http://docs.rhomobile.com/rhoconnect/heroku-addon), then you can omit the config.uri and config.token (they are managed for you):
 
 	Rhoconnectrb.configure do |config|
+		config.app_endpoint = "http://myapp.heroku.com"
 	  config.authenticate = lambda { |credentials|
 	    User.authenticate(credentials[:login], credentials[:password])
 	  }
 	end
 
-## Rhoconnectrb API
+## Rhoconnect-rb API
 
 ### Overview of the API
 
