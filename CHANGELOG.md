@@ -1,3 +1,6 @@
+## 1.0.2
+* added underscore to string class if not rails env
+
 ## 1.0.1
 * Fixed file require for irb
 
