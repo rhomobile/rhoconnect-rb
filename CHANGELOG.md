@@ -1,5 +1,7 @@
-## 1.0.0
+## 1.0.1
 * Fixed file require for irb
+
+## 1.0.0
 * Added rhoconnect API methods
 * Changed namespace from Rhoconnect to Rhoconnectrb
 * `rhoconnect_query` now takes an attributes hash
