@@ -17,7 +17,7 @@ describe Rhoconnectrb::API do
     stub_request(:get, "http://mytoken:@testurl.com/rc/v1/users/testuser/clients").to_return(:body=>'clientslist')
     stub_request(:get, "http://mytoken:@testurl.com/rc/v1/users/testuser/sources/product/docnames").to_return(:body=>'docnames')
     stub_request(:post, "http://mytoken:@testurl.com/rc/v1/read_state/users/testuser/sources/product").to_return(:body=>'readstate sources')
-    stub_request(:post, "http://mytoken:@testurl.com/rc/v1/users/testuser").to_return(:body => "testuser")
+    stub_request(:post, "http://mytoken:@testurl.com/rc/v1/users").to_return(:body => "testuser")
     stub_request(:put, "http://mytoken:@testurl.com/rc/v1/users/testuser").to_return(:body => 'testuser')
     stub_request(:delete, "http://mytoken:@testurl.com/rc/v1/users/testuser").to_return(:body => 'testuser')
     stub_request(:post, "http://mytoken:@testurl.com/rc/v1/system/login").to_return(:body=>'login')
@@ -48,7 +48,7 @@ describe Rhoconnectrb::API do
     
     it "should format post request" do
       data = {:id=>'1'}
-      resp = Rhoconnectrb::API::Users.post('testuser',data)
+      resp = Rhoconnectrb::API::Users.post(data)
       resp.body.should == 'testuser'
     end
     
