@@ -1,4 +1,6 @@
 ## 1.0.2
+* fix users post call
+## 1.0.2
 * added underscore to string class if not rails env
 
 ## 1.0.1

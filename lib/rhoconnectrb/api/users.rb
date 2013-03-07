@@ -11,9 +11,12 @@ module Rhoconnectrb
         if action.size == 1
           if action[0] =~ /put|delete/
             resp = Base.send(action[0],"/#{klass}/#{args[0]}",args[1])
-          else
+          elsif action[0] =~ /get/
             url = args.size > 0 ? "/#{klass}/#{args[0]}" : "/#{klass}"
             resp = Base.send(action[0],url,args[1])
+          elsif action[0] =~ /post/
+            url = "/#{klass}"
+            resp = Base.send(action[0],url,args[0])
           end
         end
         
