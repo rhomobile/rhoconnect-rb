@@ -1,8 +1,10 @@
 ## 1.1.0 (not yet released)
 * support for rails 4 & ruby 2.0
 
-## 1.0.2
+## 1.0.3
 * fix users post call
+
+## 1.0.2
 * added underscore to string class if not rails env
 
 ## 1.0.1
